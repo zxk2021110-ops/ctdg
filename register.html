@@ -98,12 +98,10 @@
         </div>
     </div>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
-<script src="firebase-config.js"></script>
+<!-- 后端 API -->
+<script src="api.js"></script>
 <script>
-document.getElementById('regForm').addEventListener('submit', function(e) {
+document.getElementById('regForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     let user = document.getElementById('username').value;
     let pwd = document.getElementById('password').value;
@@ -119,24 +117,17 @@ document.getElementById('regForm').addEventListener('submit', function(e) {
         return;
     }
 
-    // 将用户名转为邮箱格式存储
-    let email = user + '@pethome.com';
-
-    auth.createUserWithEmailAndPassword(email, pwd)
-        .then((userCredential) => {
-            // 将用户名保存到用户资料
-            return userCredential.user.updateProfile({ displayName: user });
-        })
-        .then(() => {
+    try {
+        const result = await api.register(user, pwd);
+        if (result.success) {
             alert('注册成功！请登录');
             location.href = 'login.html';
-        })
-        .catch((error) => {
-            let msg = '注册失败！';
-            if (error.code === 'auth/email-already-in-use') msg = '用户名已存在！';
-            if (error.code === 'auth/weak-password') msg = '密码强度不够！';
-            alert(msg);
-        });
+        } else {
+            alert(result.message || '注册失败！');
+        }
+    } catch (error) {
+        alert('网络错误，请检查后端服务是否启动！');
+    }
 });
 </script>
 </body>

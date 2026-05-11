@@ -32,22 +32,14 @@
         <div class="w-16 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mx-auto animate-pulse"></div>
     </div>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
-<script src="firebase-config.js"></script>
 <script>
-auth.signOut().then(() => {
-    localStorage.removeItem('isLogin');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userId');
-    setTimeout(() => {
-        alert('退出成功！');
-        location.href = 'login.html';
-    }, 500);
-}).catch((error) => {
-    alert('退出失败：' + error.message);
-});
+localStorage.removeItem('isLogin');
+localStorage.removeItem('username');
+localStorage.removeItem('userId');
+setTimeout(() => {
+    alert('退出成功！');
+    location.href = 'login.html';
+}, 500);
 </script>
 </body>
 </html>

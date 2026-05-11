@@ -88,36 +88,28 @@
         </div>
     </div>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
-<script src="firebase-config.js"></script>
+<!-- 后端 API -->
+<script src="api.js"></script>
 <script>
-document.getElementById('loginForm').addEventListener('submit', function(e) {
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    let email = document.getElementById('username').value;
+    let user = document.getElementById('username').value;
     let pwd = document.getElementById('password').value;
 
-    // 如果用户输入的不是邮箱格式，添加默认域名
-    if (!email.includes('@')) {
-        email = email + '@pethome.com';
-    }
-
-    auth.signInWithEmailAndPassword(email, pwd)
-        .then((userCredential) => {
+    try {
+        const result = await api.login(user, pwd);
+        if (result.success) {
             localStorage.setItem('isLogin', 'true');
-            localStorage.setItem('userEmail', userCredential.user.email);
-            localStorage.setItem('userId', userCredential.user.uid);
+            localStorage.setItem('username', result.data.username);
+            localStorage.setItem('userId', result.data.id);
             alert('登录成功！');
             location.href = 'index.html';
-        })
-        .catch((error) => {
-            let msg = '登录失败！';
-            if (error.code === 'auth/user-not-found') msg = '用户不存在！';
-            if (error.code === 'auth/wrong-password') msg = '密码错误！';
-            if (error.code === 'auth/invalid-email') msg = '邮箱格式不正确！';
-            alert(msg);
-        });
+        } else {
+            alert(result.message || '登录失败！');
+        }
+    } catch (error) {
+        alert('网络错误，请检查后端服务是否启动！');
+    }
 });
 </script>
 </body>

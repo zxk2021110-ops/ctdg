@@ -104,21 +104,15 @@
     <div class="paw-print paw-4">🐾</div>
     <div class="paw-print paw-5">🐾</div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
-    <script src="firebase-config.js"></script>
+    <!-- 后端 API -->
+    <script src="api.js"></script>
     <script>
-        // 检测 Firebase 登录状态
-        auth.onAuthStateChanged(function(user) {
-            if (!user) {
-                location.href = 'login.html';
-            } else {
-                // 显示用户名
-                let displayName = user.displayName || user.email.split('@')[0];
-                document.getElementById('username').textContent = displayName;
-            }
-        });
+        // 检测登录状态
+        if (localStorage.getItem('isLogin') !== 'true') {
+            location.href = 'login.html';
+        } else {
+            document.getElementById('username').textContent = localStorage.getItem('username') || '新朋友';
+        }
     </script>
 
     <!-- 导航栏 -->
