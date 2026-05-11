@@ -1,5 +1,5 @@
 // API 配置
-const API_BASE_URL = 'https://4c3fb209.r28.cpolar.top/api';
+const API_BASE_URL = 'https://369b886e.r28.cpolar.top/api';
 
 // API 客户端
 const api = {
