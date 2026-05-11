@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>宠物之家 - 探索奇妙的宠物世界</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { 50: '#FFF8E1', 100: '#FFECB3', 200: '#FFD54F', 300: '#FFB347', 400: '#FFA726', 500: '#FF9800', 600: '#FB8C00', 700: '#F57C00', 800: '#EF6C00', 900: '#E65100' },
+                        warm: { 50: '#FDF6E3', 100: '#FAEBD7', 200: '#F5DEB3', 300: '#DEB887', 400: '#D2A679', 500: '#C4956A', 600: '#A0522D', 700: '#8B4513', 800: '#6B3410', 900: '#4E2A0E' },
+                        cream: '#FDF6E3',
+                        peach: '#FFDAB9',
+                        sand: '#F5DEB3'
+                    },
+                    fontFamily: { sans: ['"Nunito"', '"Varela Round"', 'system-ui', '-apple-system', 'sans-serif'] },
+                    borderRadius: { '4xl': '2rem', '5xl': '2.5rem' },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'float-delayed': 'float 6s ease-in-out 2s infinite',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                        'slide-down': 'slideDown 0.3s ease-out',
+                        'fade-in': 'fadeIn 0.8s ease-out',
+                        'scale-in': 'scaleIn 0.5s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-slow': 'bounce 2s infinite',
+                        'shimmer': 'shimmer 2s linear infinite',
+                        'wiggle': 'wiggle 1s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: { '0%, 100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-20px)' } },
+                        slideUp: { '0%': { transform: 'translateY(30px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
+                        slideDown: { '0%': { transform: 'translateY(-10px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        scaleIn: { '0%': { transform: 'scale(0.9)', opacity: '0' }, '100%': { transform: 'scale(1)', opacity: '1' } },
+                        shimmer: { '0%': { backgroundPosition: '-200% 0' }, '100%': { backgroundPosition: '200% 0' } },
+                        wiggle: { '0%, 100%': { transform: 'rotate(-3deg)' }, '50%': { transform: 'rotate(3deg)' } }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&family=Varela+Round&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Nunito', 'Varela Round', system-ui, -apple-system, sans-serif; background: #FDF6E3; min-height: 100vh; }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #FAEBD7; }
+        ::-webkit-scrollbar-thumb { background: #DEB887; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #C4956A; }
+
+        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 218, 185, 0.4); }
+
+        .card-hover { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .card-hover:hover { transform: translateY(-8px) scale(1.02); box-shadow: 0 25px 50px -12px rgba(255, 152, 0, 0.15); }
+
+        .gradient-text { background: linear-gradient(135deg, #FFB347, #FF9800, #E65100); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+        .bg-decoration { position: fixed; width: 100%; height: 100%; top: 0; left: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+        .bg-decoration::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 20% 80%, rgba(255, 179, 71, 0.08) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 152, 0, 0.06) 0%, transparent 50%), radial-gradient(circle at 40% 40%, rgba(230, 81, 0, 0.04) 0%, transparent 50%); animation: float 20s ease-in-out infinite; }
+
+        .btn-shine { position: relative; overflow: hidden; }
+        .btn-shine::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); transform: rotate(45deg); animation: shimmer 3s linear infinite; }
+
+        .img-container { position: relative; overflow: hidden; border-radius: 1.5rem; }
+        .img-container img { transition: transform 0.5s ease; }
+        .img-container:hover img { transform: scale(1.05); }
+
+        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.6s ease-out; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+
+        /* 爪印装饰 */
+        .paw-print { position: absolute; opacity: 0.06; font-size: 3rem; pointer-events: none; user-select: none; }
+        .paw-1 { top: 15%; left: 5%; transform: rotate(-20deg); font-size: 4rem; }
+        .paw-2 { top: 35%; right: 8%; transform: rotate(15deg); font-size: 3.5rem; }
+        .paw-3 { bottom: 20%; left: 10%; transform: rotate(-45deg); font-size: 2.5rem; }
+        .paw-4 { top: 60%; right: 3%; transform: rotate(30deg); font-size: 3rem; }
+        .paw-5 { bottom: 40%; left: 3%; transform: rotate(10deg); font-size: 2rem; }
+
+        @media (max-width: 768px) {
+            .desktop-nav { display: none; }
+            .mobile-nav { display: flex; }
+        }
+        @media (min-width: 769px) {
+            .desktop-nav { display: flex; }
+            .mobile-nav { display: none; }
+        }
+
+        /* 每日萌宠卡片特效 */
+        .tip-card { background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 50%, #FFDAB9 100%); border: 2px solid rgba(255, 179, 71, 0.3); }
+    </style>
+</head>
+<body class="bg-cream min-h-screen flex flex-col relative">
+    <div class="bg-decoration"></div>
+
+    <!-- 爪印装饰 -->
+    <div class="paw-print paw-1">🐾</div>
+    <div class="paw-print paw-2">🐾</div>
+    <div class="paw-print paw-3">🐾</div>
+    <div class="paw-print paw-4">🐾</div>
+    <div class="paw-print paw-5">🐾</div>
+
+    <script>
+        if(localStorage.getItem('isLogin') !== 'true') location.href = 'login.html';
+    </script>
+
+    <!-- 导航栏 -->
+    <nav class="glass sticky top-0 z-50 shadow-sm border-b border-primary-200/30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16 lg:h-20">
+                <h1 class="text-xl lg:text-2xl font-extrabold flex items-center gap-2">
+                    <a href="index.html" class="flex items-center gap-2 group">
+                        <span class="text-3xl lg:text-4xl group-hover:animate-wiggle transition-transform">🐾</span>
+                        <span class="gradient-text">宠物之家</span>
+                    </a>
+                </h1>
+
+                <div class="desktop-nav items-center gap-1 lg:gap-2">
+                    <a href="index.html" class="px-3 lg:px-4 py-2 rounded-2xl text-sm font-semibold bg-primary-300/20 text-primary-700 hover:bg-primary-300/30 transition-all">首页</a>
+                    <a href="dogs.html" class="px-3 lg:px-4 py-2 rounded-2xl text-sm font-medium text-warm-600 hover:text-primary-600 hover:bg-primary-50 transition-all">🐶 犬科图鉴</a>
+                    <a href="cats.html" class="px-3 lg:px-4 py-2 rounded-2xl text-sm font-medium text-warm-600 hover:text-primary-600 hover:bg-primary-50 transition-all">🐱 猫科图鉴</a>
+                    <a href="science.html" class="px-3 lg:px-4 py-2 rounded-2xl text-sm font-medium text-warm-600 hover:text-primary-600 hover:bg-primary-50 transition-all">📖 饲养指南</a>
+                    <div class="ml-2 lg:ml-4 pl-2 lg:pl-4 border-l border-primary-200">
+                        <a href="logout.html" class="px-3 lg:px-4 py-2 rounded-2xl text-sm font-medium text-warm-500 hover:text-red-500 hover:bg-red-50 transition-all">退出登录</a>
+                    </div>
+                </div>
+
+                <a href="index.html" class="mobile-nav p-2 rounded-2xl hover:bg-primary-50 transition-colors">
+                    <svg class="w-6 h-6 text-warm-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 英雄区域 -->
+    <header class="relative overflow-hidden py-12 sm:py-16 lg:py-24">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row items-center gap-8 lg:gap-16">
+                <div class="flex-1 space-y-6 lg:space-y-8 text-center lg:text-left animate-slide-up">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-300/15 text-primary-700 text-sm font-medium">
+                        <span class="w-2 h-2 bg-primary-500 rounded-full animate-pulse"></span>
+                        欢迎回来
+                    </div>
+                    <h2 class="text-4xl sm:text-5xl lg:text-6xl font-black text-warm-800 leading-tight">
+                        探索奇妙的<br>
+                        <span class="gradient-text">宠物世界</span>
+                    </h2>
+                    <p class="text-lg sm:text-xl text-warm-600 leading-relaxed max-w-2xl mx-auto lg:mx-0">
+                        亲爱的 <span id="username" class="font-bold text-primary-600"></span>，了解不同品种的性格特点、健康需求与科学喂养方法。<br class="hidden sm:block">
+                        用科学的知识，给毛孩子最好的爱。
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                        <a href="dogs.html" class="btn-shine inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-3xl font-semibold shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all hover:-translate-y-0.5">
+                            <span>🐶</span> 开始探索
+                        </a>
+                        <a href="science.html" class="inline-flex items-center justify-center gap-2 px-8 py-4 glass text-warm-700 rounded-3xl font-semibold hover:bg-white/90 transition-all hover:-translate-y-0.5">
+                            <span>📖</span> 学习知识
+                        </a>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-4 pt-6 lg:pt-8 max-w-md mx-auto lg:mx-0">
+                        <div class="text-center">
+                            <div class="text-2xl lg:text-3xl font-black text-primary-600">12+</div>
+                            <div class="text-xs lg:text-sm text-warm-500">犬种图鉴</div>
+                        </div>
+                        <div class="text-center border-x border-primary-200">
+                            <div class="text-2xl lg:text-3xl font-black text-primary-600">6+</div>
+                            <div class="text-xs lg:text-sm text-warm-500">猫种图鉴</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl lg:text-3xl font-black text-primary-600">100+</div>
+                            <div class="text-xs lg:text-sm text-warm-500">科普文章</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex-1 relative animate-fade-in">
+                    <div class="relative z-10">
+                        <div class="img-container shadow-2xl shadow-primary-500/20">
+                            <img src="和谐相处.png" alt="宠物之家" class="rounded-3xl object-cover w-full h-64 sm:h-80 lg:h-[450px]">
+                        </div>
+                        <div class="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-primary-300 to-primary-500 rounded-3xl rotate-12 opacity-80 animate-float"></div>
+                        <div class="absolute -bottom-4 -left-4 w-20 h-20 bg-gradient-to-br from-peach to-primary-400 rounded-full opacity-60 animate-float-delayed"></div>
+                        <div class="absolute top-1/2 -right-8 w-16 h-16 bg-gradient-to-br from-primary-200 to-primary-400 rounded-2xl rotate-45 opacity-50 animate-pulse-slow"></div>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-br from-primary-200/20 to-peach/20 rounded-3xl blur-3xl -z-10 transform rotate-6 scale-95"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 每日萌宠科普 -->
+    <section class="relative py-8 sm:py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="tip-card rounded-3xl p-6 sm:p-8 shadow-lg shadow-primary-500/10 reveal">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <div class="w-14 h-14 bg-gradient-to-br from-primary-400 to-primary-600 rounded-2xl flex items-center justify-center text-3xl shadow-lg shadow-primary-500/30 shrink-0">
+                        💡
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <h3 class="text-lg font-bold text-warm-800">每日萌宠科普</h3>
+                            <span class="px-2 py-0.5 bg-primary-300/20 text-primary-700 rounded-full text-xs font-medium">TODAY</span>
+                        </div>
+                        <p id="dailyTip" class="text-warm-600 leading-relaxed"></p>
+                    </div>
+                    <button onclick="refreshTip()" class="shrink-0 px-4 py-2 bg-white/80 hover:bg-white text-primary-600 rounded-2xl text-sm font-medium transition-all hover:shadow-md border border-primary-200">
+                        🔄 换一条
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 快速探索区域 -->
+    <section class="relative py-16 sm:py-20 lg:py-28">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12 lg:mb-16 reveal">
+                <span class="inline-block px-4 py-1.5 rounded-full bg-primary-100 text-primary-700 text-sm font-medium mb-4">精选内容</span>
+                <h3 class="text-3xl sm:text-4xl lg:text-5xl font-black text-warm-800 mb-4">快速探索通道</h3>
+                <p class="text-warm-500 text-lg max-w-2xl mx-auto">选择你感兴趣的领域，开启宠物知识之旅</p>
+            </div>
+
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+                <a href="dogs.html" class="group bg-white/80 backdrop-blur-sm p-6 lg:p-8 rounded-3xl shadow-sm border border-primary-100/50 card-hover block reveal">
+                    <div class="w-16 h-16 lg:w-20 lg:h-20 bg-gradient-to-br from-primary-300 to-primary-500 rounded-3xl flex items-center justify-center text-3xl lg:text-4xl mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all shadow-lg shadow-primary-500/30">🐶</div>
+                    <h3 class="text-xl lg:text-2xl font-bold text-warm-800 mb-3 group-hover:text-primary-600 transition-colors">犬类百科</h3>
+                    <p class="text-warm-500 text-sm lg:text-base mb-6 leading-relaxed">包含萨摩耶、金毛、柯基等热门犬种的性格解析与饲养指南。</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-primary-600 text-sm font-semibold group-hover:translate-x-2 transition-transform">进入图鉴 →</span>
+                        <span class="text-xs px-3 py-1 rounded-full bg-primary-100 text-primary-700 font-medium">12+ 品种</span>
+                    </div>
+                </a>
+
+                <a href="cats.html" class="group bg-white/80 backdrop-blur-sm p-6 lg:p-8 rounded-3xl shadow-sm border border-primary-100/50 card-hover block reveal" style="transition-delay: 0.1s">
+                    <div class="w-16 h-16 lg:w-20 lg:h-20 bg-gradient-to-br from-primary-400 to-primary-600 rounded-3xl flex items-center justify-center text-3xl lg:text-4xl mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all shadow-lg shadow-primary-500/30">🐱</div>
+                    <h3 class="text-xl lg:text-2xl font-bold text-warm-800 mb-3 group-hover:text-primary-600 transition-colors">猫科图录</h3>
+                    <p class="text-warm-500 text-sm lg:text-base mb-6 leading-relaxed">深入了解英短、布偶等猫咪的生活习性与健康护理知识。</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-primary-600 text-sm font-semibold group-hover:translate-x-2 transition-transform">进入图鉴 →</span>
+                        <span class="text-xs px-3 py-1 rounded-full bg-primary-100 text-primary-700 font-medium">6+ 品种</span>
+                    </div>
+                </a>
+
+                <a href="science.html" class="group bg-white/80 backdrop-blur-sm p-6 lg:p-8 rounded-3xl shadow-sm border border-primary-100/50 card-hover block reveal sm:col-span-2 lg:col-span-1" style="transition-delay: 0.2s">
+                    <div class="w-16 h-16 lg:w-20 lg:h-20 bg-gradient-to-br from-primary-300 to-primary-500 rounded-3xl flex items-center justify-center text-3xl lg:text-4xl mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all shadow-lg shadow-primary-500/30">📖</div>
+                    <h3 class="text-xl lg:text-2xl font-bold text-warm-800 mb-3 group-hover:text-primary-600 transition-colors">科学饲养指南</h3>
+                    <p class="text-warm-500 text-sm lg:text-base mb-6 leading-relaxed">掌握科学的饮食搭配、疫苗接种与日常疾病预防知识。</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-primary-600 text-sm font-semibold group-hover:translate-x-2 transition-transform">学习知识 →</span>
+                        <span class="text-xs px-3 py-1 rounded-full bg-primary-100 text-primary-700 font-medium">100+ 文章</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 特色功能区域 -->
+    <section class="relative py-16 sm:py-20 bg-gradient-to-b from-transparent via-white/50 to-transparent">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 reveal">
+                <div class="glass p-6 rounded-3xl text-center hover:bg-white/90 transition-all hover:-translate-y-1">
+                    <div class="text-4xl mb-4">🎯</div>
+                    <h4 class="font-bold text-warm-800 mb-2">精准分类</h4>
+                    <p class="text-sm text-warm-500">按品种、习性科学分类</p>
+                </div>
+                <div class="glass p-6 rounded-3xl text-center hover:bg-white/90 transition-all hover:-translate-y-1">
+                    <div class="text-4xl mb-4">📸</div>
+                    <h4 class="font-bold text-warm-800 mb-2">高清图鉴</h4>
+                    <p class="text-sm text-warm-500">真实宠物照片展示</p>
+                </div>
+                <div class="glass p-6 rounded-3xl text-center hover:bg-white/90 transition-all hover:-translate-y-1">
+                    <div class="text-4xl mb-4">💡</div>
+                    <h4 class="font-bold text-warm-800 mb-2">专业科普</h4>
+                    <p class="text-sm text-warm-500">权威饲养知识分享</p>
+                </div>
+                <div class="glass p-6 rounded-3xl text-center hover:bg-white/90 transition-all hover:-translate-y-1">
+                    <div class="text-4xl mb-4">📱</div>
+                    <h4 class="font-bold text-warm-800 mb-2">多端适配</h4>
+                    <p class="text-sm text-warm-500">手机电脑完美显示</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-gradient-to-br from-warm-800 to-warm-900 text-white py-12 mt-auto relative overflow-hidden">
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=&quot;60&quot; height=&quot;60&quot; viewBox=&quot;0 0 60 60&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;%3E%3Cg fill=&quot;none&quot; fill-rule=&quot;evenodd&quot;%3E%3Cg fill=&quot;%23ffffff&quot; fill-opacity=&quot;0.03&quot;%3E%3Ccircle cx=&quot;30&quot; cy=&quot;30&quot; r=&quot;2&quot;/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl">🐾</span>
+                    <span class="text-xl font-bold gradient-text">宠物之家</span>
+                </div>
+                <div class="flex flex-wrap justify-center gap-6 text-sm text-warm-400">
+                    <a href="dogs.html" class="hover:text-white transition-colors">犬科图鉴</a>
+                    <a href="cats.html" class="hover:text-white transition-colors">猫科图鉴</a>
+                    <a href="science.html" class="hover:text-white transition-colors">饲养指南</a>
+                </div>
+                <p class="text-sm text-warm-500">© 2026 宠物之家. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" class="fixed bottom-6 right-6 z-50 w-12 h-12 bg-gradient-to-br from-primary-400 to-primary-600 text-white rounded-full shadow-lg shadow-primary-500/30 flex items-center justify-center opacity-0 invisible transition-all hover:-translate-y-1 hover:shadow-xl active:translate-y-0">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+    </button>
+
+    <script>
+        // 用户名显示
+        document.getElementById('username').textContent = localStorage.getItem('username') || '新朋友';
+
+        // 每日萌宠科普
+        const petTips = [
+            '猫咪每天需要睡12-16个小时，所以它们大部分时间都在打盹哦！这就是为什么叫"懒猫"的原因~',
+            '狗狗的鼻纹和人类的指纹一样，每只都是独一无二的，可以用来识别身份。',
+            '猫咪发出"咕噜咕噜"的声音不只代表开心，也可能是在自我疗愈，因为这种振动能促进骨骼修复。',
+            '金毛犬最初被培育用于寻回猎物，所以它们天生就喜欢叼东西，给它玩具会很开心！',
+            '兔子不能只吃胡萝卜！过多的胡萝卜会导致兔子肥胖，它们的主食应该是干草和新鲜蔬菜。',
+            '仓鼠一晚上能跑8-12公里，所以仓鼠滚轮是必不可少的装备！',
+            '猫咪的耳朵可以独立旋转180度，这让它们能精确定位声音来源，比雷达还厉害。',
+            '狗的嗅觉比人类灵敏10000倍以上，这就是为什么它们能被训练成搜救犬和缉毒犬。',
+            '布偶猫的名字来源于它们被抱起时会像布偶一样全身放松，是极度信任主人的表现。',
+            '柯基的短腿并不是基因缺陷，而是为了在牧牛时避免被牛踢到而自然选育的结果。',
+            '猫咪每天花30-50%的时间梳理自己的毛发，这不仅是为了干净，也是减压的方式。',
+            '哈士奇的蓝色眼睛其实是一种基因突变，与听力无关，和它们的"二"也没有关系（大概）。',
+            '狗狗摇尾巴不一定都是开心，右摇代表积极情绪，左摇可能代表不安或紧张。',
+            '暹罗猫的重点色基因会随温度变化，冬天脸会更黑，夏天则会变浅，是天然的"温度计"。',
+            '猫咪从高处落下时能在空中转身，用四脚着地，这得益于它们超强的平衡感和柔韧性。',
+            '狗狗能听到人类听不到的超声波，所以有时候它对着空气叫，可能是听到了什么有趣的声音。'
+        ];
+
+        let currentTipIndex = Math.floor(Math.random() * petTips.length);
+
+        function showTip() {
+            document.getElementById('dailyTip').textContent = petTips[currentTipIndex];
+        }
+
+        function refreshTip() {
+            currentTipIndex = (currentTipIndex + 1) % petTips.length;
+            const tipEl = document.getElementById('dailyTip');
+            tipEl.style.opacity = '0';
+            tipEl.style.transform = 'translateY(10px)';
+            setTimeout(() => {
+                showTip();
+                tipEl.style.transition = 'all 0.3s ease';
+                tipEl.style.opacity = '1';
+                tipEl.style.transform = 'translateY(0)';
+            }, 200);
+        }
+
+        showTip();
+
+        // 滚动显示动画
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // 返回顶部按钮
+        window.addEventListener('scroll', () => {
+            const btn = document.getElementById('backToTop');
+            if (window.scrollY > 300) {
+                btn.classList.remove('opacity-0', 'invisible');
+                btn.classList.add('opacity-100', 'visible');
+            } else {
+                btn.classList.add('opacity-0', 'invisible');
+                btn.classList.remove('opacity-100', 'visible');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>饲养指南 - 宠物之家</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { 50: '#FFF8E1', 100: '#FFECB3', 200: '#FFD54F', 300: '#FFB347', 400: '#FFA726', 500: '#FF9800', 600: '#FB8C00', 700: '#F57C00', 800: '#EF6C00', 900: '#E65100' },
+                        warm: { 50: '#FDF6E3', 100: '#FAEBD7', 200: '#F5DEB3', 300: '#DEB887', 400: '#D2A679', 500: '#C4956A', 600: '#A0522D', 700: '#8B4513', 800: '#6B3410', 900: '#4E2A0E' },
+                        cream: '#FDF6E3',
+                        peach: '#FFDAB9',
+                        sand: '#F5DEB3'
+                    },
+                    fontFamily: { sans: ['"Nunito"', '"Varela Round"', 'system-ui', '-apple-system', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&family=Varela+Round&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Nunito', 'Varela Round', system-ui, -apple-system, sans-serif; }
+        .gradient-text { background: linear-gradient(135deg, #FFB347, #FF9800, #E65100); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+        @media (max-width: 768px) {
+            .desktop-nav { display: none; }
+            .mobile-nav { display: flex; }
+        }
+        @media (min-width: 769px) {
+            .desktop-nav { display: flex; }
+            .mobile-nav { display: none; }
+        }
+
+        .search-box { transition: all 0.3s ease; }
+        .search-box:focus { width: 200px; }
+
+        /* 折叠面板样式 */
+        .accordion-item { border: 2px solid rgba(255, 179, 71, 0.2); transition: all 0.3s ease; }
+        .accordion-item:hover { border-color: rgba(255, 179, 71, 0.4); }
+        .accordion-item.active { border-color: rgba(255, 152, 0, 0.5); box-shadow: 0 8px 30px rgba(255, 152, 0, 0.1); }
+        .accordion-header { cursor: pointer; user-select: none; }
+        .accordion-header .arrow-icon { transition: transform 0.3s ease; }
+        .accordion-item.active .accordion-header .arrow-icon { transform: rotate(180deg); }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.3s ease; }
+        .accordion-item.active .accordion-content { max-height: 2000px; }
+
+        #backToTop { opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+        #backToTop.show { opacity: 1; visibility: visible; }
+    </style>
+</head>
+<body class="bg-cream min-h-screen flex flex-col">
+    <script>if(localStorage.getItem('isLogin') !== 'true') location.href = 'login.html';</script>
+
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm border-b border-primary-200/30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="index.html" class="flex items-center gap-2">
+                    <span class="text-2xl">🐾</span>
+                    <span class="text-xl font-bold gradient-text">宠物之家</span>
+                </a>
+                <div class="desktop-nav items-center gap-1">
+                    <a href="index.html" class="px-3 py-2 rounded-2xl text-sm font-medium text-warm-600 hover:text-primary-600 hover:bg-primary-50">首页</a>
+                    <a href="dogs.html" class="px-3 py-2 rounded-2xl text-sm font-medium text-warm-600 hover:text-primary-600 hover:bg-primary-50">🐶 犬科图鉴</a>
+                    <a href="cats.html" class="px-3 py-2 rounded-2xl text-sm font-medium text-warm-600 hover:text-primary-600 hover:bg-primary-50">🐱 猫科图鉴</a>
+                    <a href="science.html" class="px-3 py-2 rounded-2xl text-sm font-semibold bg-primary-100 text-primary-700">📖 饲养指南</a>
+                    <div class="relative ml-2">
+                        <input type="text" id="searchInput" placeholder="搜索指南..." class="search-box w-32 px-3 py-1.5 text-sm border border-primary-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent bg-white/80" onkeyup="searchGuide(this.value)">
+                        <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-warm-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </div>
+                    <a href="logout.html" class="ml-2 px-3 py-2 rounded-2xl text-sm font-medium text-warm-500 hover:text-red-500 hover:bg-red-50">退出</a>
+                </div>
+                <a href="index.html" class="mobile-nav p-2 rounded-2xl hover:bg-primary-50">
+                    <svg class="w-6 h-6 text-warm-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+
+        <div class="text-center mb-10">
+            <span class="inline-block px-4 py-1.5 rounded-full bg-primary-100 text-primary-700 text-sm font-medium mb-4">养宠必读</span>
+            <h1 class="text-3xl sm:text-4xl font-black text-warm-800 mb-2">科学饲养指南</h1>
+            <p class="text-warm-500">点击展开查看详细内容，掌握科学养宠知识</p>
+        </div>
+
+        <div class="space-y-4" id="accordionContainer">
+
+            <!-- 疫苗与驱虫 -->
+            <div class="accordion-item active bg-white rounded-3xl overflow-hidden" data-section="vaccine">
+                <div class="accordion-header flex items-center gap-4 p-5 sm:p-6" onclick="toggleAccordion(this.parentElement)">
+                    <div class="w-12 h-12 bg-gradient-to-br from-primary-400 to-primary-600 rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-primary-500/30 shrink-0">💉</div>
+                    <div class="flex-1">
+                        <h2 class="text-lg sm:text-xl font-bold text-warm-800">疫苗与驱虫规范</h2>
+                        <p class="text-warm-500 text-sm hidden sm:block">科学免疫和驱虫是保护宠物生命健康的第一道防线</p>
+                    </div>
+                    <svg class="arrow-icon w-6 h-6 text-warm-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="accordion-content px-5 sm:px-6 pb-5 sm:pb-6">
+                    <div class="grid sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
+                        <div class="bg-gradient-to-br from-primary-50 to-primary-100/50 p-4 sm:p-5 rounded-2xl border border-primary-200/50">
+                            <h3 class="text-base font-bold text-warm-800 mb-3 flex items-center gap-2">
+                                <span class="w-8 h-8 bg-primary-500 rounded-xl flex items-center justify-center text-white text-sm">🐕</span>
+                                犬类疫苗
+                            </h3>
+                            <ul class="space-y-2 text-warm-600 text-sm">
+                                <li>• 核心疫苗：狂犬 + 联苗</li>
+                                <li>• 首次免疫需打满三针</li>
+                                <li>• 此后每年补强一针</li>
+                            </ul>
+                        </div>
+                        <div class="bg-gradient-to-br from-primary-50 to-primary-100/50 p-4 sm:p-5 rounded-2xl border border-primary-200/50">
+                            <h3 class="text-base font-bold text-warm-800 mb-3 flex items-center gap-2">
+                                <span class="w-8 h-8 bg-primary-500 rounded-xl flex items-center justify-center text-white text-sm">🐱</span>
+                                猫类疫苗
+                            </h3>
+                            <ul class="space-y-2 text-warm-600 text-sm">
+                                <li>• 核心疫苗：狂犬 + 猫三联</li>
+                                <li>• 首次免疫需打满三针</li>
+                                <li>• 此后每年补强一针</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-primary-50 to-peach/30 p-4 sm:p-5 rounded-2xl border border-primary-200/50">
+                        <h3 class="text-base font-bold text-warm-800 mb-4 flex items-center gap-2">
+                            <span class="w-8 h-8 bg-primary-500 rounded-xl flex items-center justify-center text-white text-sm">🐛</span>
+                            驱虫指南
+                        </h3>
+                        <div class="grid sm:grid-cols-2 gap-4">
+                            <div class="bg-white/60 p-4 rounded-2xl">
+                                <h4 class="font-semibold text-warm-800 mb-2">体内驱虫</h4>
+                                <p class="text-sm text-warm-600">建议每3个月一次，经常吃生肉或外出的宠物需缩短为1个月一次。</p>
+                            </div>
+                            <div class="bg-white/60 p-4 rounded-2xl">
+                                <h4 class="font-semibold text-warm-800 mb-2">体外驱虫</h4>
+                                <p class="text-sm text-warm-600">无论是否经常出门，建议每月进行一次体外滴剂，预防跳蚤、蜱虫。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 饮食黑名单 -->
+            <div class="accordion-item bg-white rounded-3xl overflow-hidden" data-section="diet">
+                <div class="accordion-header flex items-center gap-4 p-5 sm:p-6" onclick="toggleAccordion(this.parentElement)">
+                    <div class="w-12 h-12 bg-gradient-to-br from-red-400 to-pink-600 rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-red-500/30 shrink-0">🚫</div>
+                    <div class="flex-1">
+                        <h2 class="text-lg sm:text-xl font-bold text-warm-800">绝对禁止的饮食黑名单</h2>
+                        <p class="text-warm-500 text-sm hidden sm:block">以下食物对猫狗有致毒/致命风险，绝对不可喂食</p>
+                    </div>
+                    <svg class="arrow-icon w-6 h-6 text-warm-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="accordion-content px-5 sm:px-6 pb-5 sm:pb-6">
+                    <div class="grid sm:grid-cols-2 gap-4 sm:gap-6">
+                        <div class="bg-gradient-to-br from-red-50 to-rose-50 p-4 sm:p-5 rounded-2xl border border-red-100">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="text-2xl">🍫</span>
+                                <h3 class="text-base font-bold text-red-800">巧克力</h3>
+                            </div>
+                            <p class="text-sm text-warm-600 leading-relaxed">含有可可碱，会导致宠物心脏衰竭和神经中毒。黑巧克力危险性最高。</p>
+                        </div>
+
+                        <div class="bg-gradient-to-br from-purple-50 to-violet-50 p-4 sm:p-5 rounded-2xl border border-purple-100">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="text-2xl">🍇</span>
+                                <h3 class="text-base font-bold text-purple-800">葡萄与葡萄干</h3>
+                            </div>
+                            <p class="text-sm text-warm-600 leading-relaxed">极易引发犬类急性肾衰竭，致死率高。即使少量也可能致命。</p>
+                        </div>
+
+                        <div class="bg-gradient-to-br from-primary-50 to-amber-50 p-4 sm:p-5 rounded-2xl border border-primary-100">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="text-2xl">🧅</span>
+                                <h3 class="text-base font-bold text-warm-800">洋葱与大葱</h3>
+                            </div>
+                            <p class="text-sm text-warm-600 leading-relaxed">破坏宠物红细胞，导致严重溶血性贫血。煮熟后仍然有毒。</p>
+                        </div>
+
+                        <div class="bg-gradient-to-br from-yellow-50 to-lime-50 p-4 sm:p-5 rounded-2xl border border-yellow-100">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="text-2xl">🍬</span>
+                                <h3 class="text-base font-bold text-yellow-800">木糖醇</h3>
+                            </div>
+                            <p class="text-sm text-warm-600 leading-relaxed">常见于无糖口香糖中，会导致宠物血糖骤降及肝损伤。</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 bg-red-50 border border-red-200 rounded-2xl p-4 sm:p-5">
+                        <h4 class="font-bold text-red-800 mb-2 flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.268 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                            紧急提醒
+                        </h4>
+                        <p class="text-sm text-red-700">如果宠物误食以上食物，请立即联系兽医或前往最近的宠物医院！时间就是生命。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 日常护理 -->
+            <div class="accordion-item bg-white rounded-3xl overflow-hidden" data-section="daily">
+                <div class="accordion-header flex items-center gap-4 p-5 sm:p-6" onclick="toggleAccordion(this.parentElement)">
+                    <div class="w-12 h-12 bg-gradient-to-br from-primary-300 to-primary-500 rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-primary-500/30 shrink-0">🏠</div>
+                    <div class="flex-1">
+                        <h2 class="text-lg sm:text-xl font-bold text-warm-800">日常护理指南</h2>
+                        <p class="text-warm-500 text-sm hidden sm:block">让毛孩子健康快乐的日常秘诀</p>
+                    </div>
+                    <svg class="arrow-icon w-6 h-6 text-warm-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="accordion-content px-5 sm:px-6 pb-5 sm:pb-6">
+                    <div class="grid sm:grid-cols-2 gap-4 sm:gap-6">
+                        <div class="bg-gradient-to-br from-primary-50 to-primary-100/50 p-4 sm:p-5 rounded-2xl border border-primary-200/50">
+                            <h3 class="text-base font-bold text-warm-800 mb-3">🛁 洗澡频率</h3>
+                            <ul class="space-y-2 text-warm-600 text-sm">
+                                <li>• 短毛犬/猫：每2-3个月一次</li>
+                                <li>• 长毛犬/猫：每1-2个月一次</li>
+                                <li>• 使用宠物专用沐浴露</li>
+                                <li>• 洗后务必彻底吹干</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-gradient-to-br from-primary-50 to-peach/30 p-4 sm:p-5 rounded-2xl border border-primary-200/50">
+                            <h3 class="text-base font-bold text-warm-800 mb-3">✂️ 毛发护理</h3>
+                            <ul class="space-y-2 text-warm-600 text-sm">
+                                <li>• 短毛宠物：每周梳理1-2次</li>
+                                <li>• 长毛宠物：每天梳理</li>
+                                <li>• 换毛期增加梳理频率</li>
+                                <li>• 定期检查皮肤状况</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-gradient-to-br from-primary-50 to-primary-100/50 p-4 sm:p-5 rounded-2xl border border-primary-200/50">
+                            <h3 class="text-base font-bold text-warm-800 mb-3">🦷 口腔健康</h3>
+                            <ul class="space-y-2 text-warm-600 text-sm">
+                                <li>• 每周刷牙2-3次</li>
+                                <li>• 使用宠物专用牙膏</li>
+                                <li>• 提供磨牙玩具</li>
+                                <li>• 定期检查牙齿</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-gradient-to-br from-primary-50 to-peach/30 p-4 sm:p-5 rounded-2xl border border-primary-200/50">
+                            <h3 class="text-base font-bold text-warm-800 mb-3">🐾 指甲修剪</h3>
+                            <ul class="space-y-2 text-warm-600 text-sm">
+                                <li>• 每2-3周修剪一次</li>
+                                <li>• 注意不要剪到血线</li>
+                                <li>• 使用专用指甲钳</li>
+                                <li>• 修剪后给予奖励</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 训练技巧 -->
+            <div class="accordion-item bg-white rounded-3xl overflow-hidden" data-section="training">
+                <div class="accordion-header flex items-center gap-4 p-5 sm:p-6" onclick="toggleAccordion(this.parentElement)">
+                    <div class="w-12 h-12 bg-gradient-to-br from-primary-300 to-primary-500 rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-primary-500/30 shrink-0">🎾</div>
+                    <div class="flex-1">
+                        <h2 class="text-lg sm:text-xl font-bold text-warm-800">训练技巧</h2>
+                        <p class="text-warm-500 text-sm hidden sm:block">科学训练，建立良好关系</p>
+                    </div>
+                    <svg class="arrow-icon w-6 h-6 text-warm-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="accordion-content px-5 sm:px-6 pb-5 sm:pb-6">
+                    <div class="space-y-4 sm:space-y-6">
+                        <div class="bg-gradient-to-br from-primary-50 to-primary-100/50 p-4 sm:p-5 rounded-2xl border border-primary-200/50">
+                            <h3 class="text-base font-bold text-warm-800 mb-3">🎯 基础训练原则</h3>
+                            <div class="grid sm:grid-cols-2 gap-4">
+                                <div class="bg-white/60 p-4 rounded-2xl">
+                                    <h4 class="font-semibold text-warm-800 mb-2">正向强化</h4>
+                                    <p class="text-sm text-warm-600">用零食、抚摸、表扬奖励正确行为，而不是惩罚错误行为。</p>
+                                </div>
+                                <div class="bg-white/60 p-4 rounded-2xl">
+                                    <h4 class="font-semibold text-warm-800 mb-2">一致性</h4>
+                                    <p class="text-sm text-warm-600">全家人使用相同的口令和规则，避免宠物混淆。</p>
+                                </div>
+                                <div class="bg-white/60 p-4 rounded-2xl">
+                                    <h4 class="font-semibold text-warm-800 mb-2">耐心重复</h4>
+                                    <p class="text-sm text-warm-600">每天短时间训练（5-10分钟），多次重复效果更好。</p>
+                                </div>
+                                <div class="bg-white/60 p-4 rounded-2xl">
+                                    <h4 class="font-semibold text-warm-800 mb-2">循序渐进</h4>
+                                    <p class="text-sm text-warm-600">从简单指令开始，逐步增加难度。</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gradient-to-br from-primary-50 to-peach/30 p-4 sm:p-5 rounded-2xl border border-primary-200/50">
+                            <h3 class="text-base font-bold text-warm-800 mb-3">📝 常用指令训练</h3>
+                            <ul class="space-y-3 text-warm-600 text-sm">
+                                <li><strong>坐下：</strong>手持零食在宠物鼻前向上移动，自然坐下时说"坐"并奖励</li>
+                                <li><strong>握手：</strong>在坐下基础上，轻轻抬起爪子说"握手"并奖励</li>
+                                <li><strong>过来：</strong>后退几步，兴奋地说"过来"，宠物跑来时给予大量奖励</li>
+                                <li><strong>等待：</strong>让宠物坐下，伸出手掌说"等待"，逐渐增加等待时间</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 常见疾病 -->
+            <div class="accordion-item bg-white rounded-3xl overflow-hidden" data-section="disease">
+                <div class="accordion-header flex items-center gap-4 p-5 sm:p-6" onclick="toggleAccordion(this.parentElement)">
+                    <div class="w-12 h-12 bg-gradient-to-br from-red-400 to-pink-500 rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-red-500/30 shrink-0">🏥</div>
+                    <div class="flex-1">
+                        <h2 class="text-lg sm:text-xl font-bold text-warm-800">常见疾病预防</h2>
+                        <p class="text-warm-500 text-sm hidden sm:block">早发现、早治疗、早康复</p>
+                    </div>
+                    <svg class="arrow-icon w-6 h-6 text-warm-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="accordion-content px-5 sm:px-6 pb-5 sm:pb-6">
+                    <div class="space-y-4 sm:space-y-6">
+                        <div class="bg-gradient-to-br from-red-50 to-pink-50 p-4 sm:p-5 rounded-2xl border border-red-100">
+                            <h3 class="text-base font-bold text-red-800 mb-4">⚠️ 需要立即就医的症状</h3>
+                            <div class="grid sm:grid-cols-2 gap-3">
+                                <div class="bg-white/60 p-3 rounded-2xl flex items-start gap-2">
+                                    <span class="text-red-500 mt-0.5">•</span>
+                                    <span class="text-sm text-warm-600">持续呕吐或腹泻超过24小时</span>
+                                </div>
+                                <div class="bg-white/60 p-3 rounded-2xl flex items-start gap-2">
+                                    <span class="text-red-500 mt-0.5">•</span>
+                                    <span class="text-sm text-warm-600">呼吸困难或急促</span>
+                                </div>
+                                <div class="bg-white/60 p-3 rounded-2xl flex items-start gap-2">
+                                    <span class="text-red-500 mt-0.5">•</span>
+                                    <span class="text-sm text-warm-600">无法站立或行走异常</span>
+                                </div>
+                                <div class="bg-white/60 p-3 rounded-2xl flex items-start gap-2">
+                                    <span class="text-red-500 mt-0.5">•</span>
+                                    <span class="text-sm text-warm-600">精神萎靡、拒绝进食</span>
+                                </div>
+                                <div class="bg-white/60 p-3 rounded-2xl flex items-start gap-2">
+                                    <span class="text-red-500 mt-0.5">•</span>
+                                    <span class="text-sm text-warm-600">体温异常（正常38-39.5℃）</span>
+                                </div>
+                                <div class="bg-white/60 p-3 rounded-2xl flex items-start gap-2">
+                                    <span class="text-red-500 mt-0.5">•</span>
+                                    <span class="text-sm text-warm-600">异常出血或肿块</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gradient-to-br from-primary-50 to-primary-100/50 p-4 sm:p-5 rounded-2xl border border-primary-200/50">
+                            <h3 class="text-base font-bold text-warm-800 mb-4">🛡️ 预防措施</h3>
+                            <ul class="space-y-3 text-warm-600 text-sm">
+                                <li><strong>定期体检：</strong>每年至少一次全面检查，老年宠物每半年一次</li>
+                                <li><strong>按时疫苗：</strong>严格按照疫苗接种计划执行</li>
+                                <li><strong>合理饮食：</strong>避免喂食人类食物，选择优质宠物粮</li>
+                                <li><strong>适量运动：</strong>根据品种和年龄提供适当运动量</li>
+                                <li><strong>环境清洁：</strong>定期清洁宠物用品和生活区域</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 sm:p-5">
+                            <h4 class="font-bold text-yellow-800 mb-2 flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                温馨提示
+                            </h4>
+                            <p class="text-sm text-yellow-700">发现异常请及时就医，不要自行用药。定期体检是预防疾病的最佳方式。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" class="fixed bottom-6 right-6 z-50 w-12 h-12 bg-gradient-to-br from-primary-400 to-primary-600 text-white rounded-full shadow-lg shadow-primary-500/30 flex items-center justify-center hover:-translate-y-1 hover:shadow-xl transition-all">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+    </button>
+
+    <script>
+        function toggleAccordion(item) {
+            const isActive = item.classList.contains('active');
+            // 关闭所有
+            document.querySelectorAll('.accordion-item').forEach(el => el.classList.remove('active'));
+            // 打开点击的（如果之前是关闭的）
+            if (!isActive) {
+                item.classList.add('active');
+            }
+        }
+
+        function searchGuide(keyword) {
+            keyword = keyword.toLowerCase().trim();
+            const items = document.querySelectorAll('.accordion-item');
+
+            if (!keyword) {
+                items.forEach(item => item.style.display = '');
+                return;
+            }
+
+            const genericKeywords = ['指南', '科普', '知识', '宠物', '饲养'];
+            if (genericKeywords.includes(keyword)) {
+                alert('请输入更具体的关键词，如：疫苗、驱虫、饮食、训练');
+                return;
+            }
+
+            let found = false;
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(keyword)) {
+                    item.style.display = '';
+                    item.classList.add('active');
+                    found = true;
+                } else {
+                    item.style.display = 'none';
+                    item.classList.remove('active');
+                }
+            });
+
+            if (!found) {
+                alert('未找到匹配的内容，请尝试其他关键词');
+                items.forEach(item => item.style.display = '');
+            }
+        }
+
+        window.addEventListener('scroll', function() {
+            const btn = document.getElementById('backToTop');
+            if (window.scrollY > 300) {
+                btn.classList.add('show');
+            } else {
+                btn.classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>

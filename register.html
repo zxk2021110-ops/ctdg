@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>注册 - 宠物之家</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: { 50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd', 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a' } },
+                    fontFamily: { sans: ['"Inter"', 'system-ui', '-apple-system', 'sans-serif'] },
+                    animation: { 'float': 'float 6s ease-in-out infinite', 'slide-up': 'slideUp 0.6s ease-out', 'fade-in': 'fadeIn 0.8s ease-out' },
+                    keyframes: { float: { '0%, 100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-20px)' } }, slideUp: { '0%': { transform: 'translateY(30px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } }, fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } } }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.3); }
+        .gradient-text { background: linear-gradient(135deg, #3b82f6, #8b5cf6, #d946ef); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .btn-shine { position: relative; overflow: hidden; }
+        .btn-shine::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); transform: rotate(45deg); animation: shimmer 3s linear infinite; }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8 relative overflow-hidden">
+    <!-- 背景装饰 -->
+    <div class="absolute inset-0 pointer-events-none">
+        <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-green-400/20 to-emerald-400/20 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2 animate-float"></div>
+        <div class="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-br from-teal-400/20 to-cyan-400/20 rounded-full blur-3xl -translate-x-1/2 translate-y-1/2 animate-float" style="animation-delay: 3s;"></div>
+        <div class="absolute top-1/2 right-1/4 w-64 h-64 bg-gradient-to-br from-blue-400/10 to-green-400/10 rounded-full blur-2xl animate-float" style="animation-delay: 1.5s;"></div>
+    </div>
+
+    <div class="w-full max-w-md relative z-10 animate-slide-up">
+        <!-- Logo -->
+        <div class="text-center mb-8">
+            <a href="index.html" class="inline-flex items-center gap-3 group">
+                <span class="text-5xl group-hover:animate-bounce transition-transform">🐾</span>
+                <span class="text-3xl font-black gradient-text">宠物之家</span>
+            </a>
+            <p class="text-slate-500 mt-2 text-sm">创建您的账号，开始探索宠物世界</p>
+        </div>
+
+        <!-- 注册卡片 -->
+        <div class="glass rounded-3xl p-6 sm:p-8 shadow-xl shadow-green-500/10">
+            <form id="regForm" class="space-y-5">
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-slate-700">用户名</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        </div>
+                        <input id="username" type="text" class="w-full pl-12 pr-4 py-3 bg-white/50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500 transition-all" placeholder="请设置用户名" required>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-slate-700">密码</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                        </div>
+                        <input id="password" type="password" class="w-full pl-12 pr-4 py-3 bg-white/50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500 transition-all" placeholder="请设置密码" required>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-slate-700">确认密码</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                        </div>
+                        <input id="confirmPassword" type="password" class="w-full pl-12 pr-4 py-3 bg-white/50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500 transition-all" placeholder="请再次输入密码" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-shine w-full py-3.5 bg-gradient-to-r from-green-600 to-emerald-700 text-white rounded-xl font-semibold shadow-lg shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/40 transition-all hover:-translate-y-0.5 active:translate-y-0">
+                    注册
+                </button>
+
+                <div class="text-center text-sm text-slate-500">
+                    已有账号？
+                    <a href="login.html" class="text-green-600 hover:text-green-700 font-semibold transition-colors">去登录</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- 底部链接 -->
+        <div class="text-center mt-6 text-xs text-slate-400">
+            <a href="index.html" class="hover:text-slate-600 transition-colors">返回首页</a>
+            <span class="mx-2">·</span>
+            <span>© 2026 宠物之家</span>
+        </div>
+    </div>
+
+<script>
+document.getElementById('regForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    let user = document.getElementById('username').value;
+    let pwd = document.getElementById('password').value;
+    let confirmPwd = document.getElementById('confirmPassword').value;
+
+    if (pwd !== confirmPwd) {
+        alert('两次输入的密码不一致！');
+        return;
+    }
+
+    localStorage.setItem('username', user);
+    localStorage.setItem('password', pwd);
+
+    alert('注册成功！请登录');
+    location.href = 'login.html';
+});
+</script>
+</body>
+</html>

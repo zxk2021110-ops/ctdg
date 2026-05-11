@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>退出登录 - 宠物之家</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: { 50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd', 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a' } },
+                    fontFamily: { sans: ['"Inter"', 'system-ui', '-apple-system', 'sans-serif'] },
+                    animation: { 'fade-in': 'fadeIn 0.8s ease-out' },
+                    keyframes: { fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } } }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        .gradient-text { background: linear-gradient(135deg, #3b82f6, #8b5cf6, #d946ef); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen flex items-center justify-center p-4">
+    <div class="text-center animate-fade-in">
+        <div class="text-6xl mb-6">🐾</div>
+        <h1 class="text-2xl font-bold text-slate-800 mb-2">正在退出...</h1>
+        <p class="text-slate-500 mb-6">感谢您的访问，期待再次见面！</p>
+        <div class="w-16 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mx-auto animate-pulse"></div>
+    </div>
+
+<script>
+localStorage.removeItem('isLogin');
+setTimeout(() => {
+    alert('退出成功！');
+    location.href = 'login.html';
+}, 500);
+</script>
+</body>
+</html>

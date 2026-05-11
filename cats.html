@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>猫科图鉴 - 宠物之家</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { 50: '#FFF8E1', 100: '#FFECB3', 200: '#FFD54F', 300: '#FFB347', 400: '#FFA726', 500: '#FF9800', 600: '#FB8C00', 700: '#F57C00', 800: '#EF6C00', 900: '#E65100' },
+                        warm: { 50: '#FDF6E3', 100: '#FAEBD7', 200: '#F5DEB3', 300: '#DEB887', 400: '#D2A679', 500: '#C4956A', 600: '#A0522D', 700: '#8B4513', 800: '#6B3410', 900: '#4E2A0E' },
+                        cream: '#FDF6E3',
+                        peach: '#FFDAB9',
+                        sand: '#F5DEB3'
+                    },
+                    fontFamily: { sans: ['"Nunito"', '"Varela Round"', 'system-ui', '-apple-system', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&family=Varela+Round&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Nunito', 'Varela Round', system-ui, -apple-system, sans-serif; }
+        .gradient-text { background: linear-gradient(135deg, #FFB347, #FF9800, #E65100); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+        .sidebar-item.active { background: linear-gradient(135deg, #FFECB3, #FFDAB9); color: #E65100; font-weight: 600; border-right: 3px solid #E65100; }
+        #sidebar { transition: transform 0.3s ease-in-out; }
+        #sidebar.mobile-hidden { transform: translateX(-100%); }
+        #sidebar.mobile-show { transform: translateX(0); }
+        .sidebar-overlay { display: none; }
+        .sidebar-overlay.active { display: block; }
+        @media (max-width: 768px) {
+            .desktop-nav { display: none; }
+            .mobile-nav { display: flex; }
+        }
+        @media (min-width: 769px) {
+            .desktop-nav { display: flex; }
+            .mobile-nav { display: none; }
+            .sidebar-mobile-btn { display: none; }
+            #sidebar { transform: translateX(0) !important; }
+        }
+        .search-box { transition: all 0.3s ease; }
+        .search-box:focus { width: 200px; }
+        .lightbox { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; cursor: zoom-out; }
+        .lightbox.active { display: flex; }
+        .lightbox img { max-width: 90%; max-height: 90%; object-fit: contain; border-radius: 12px; }
+        #backToTop { opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+        #backToTop.show { opacity: 1; visibility: visible; }
+        .star-filled { color: #FFB347; }
+        .star-empty { color: #DEB887; }
+    </style>
+</head>
+<body class="bg-cream min-h-screen flex flex-col">
+    <script>if(localStorage.getItem('isLogin') !== 'true') location.href = 'login.html';</script>
+
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm border-b border-primary-200/30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="index.html" class="flex items-center gap-2">
+                    <span class="text-2xl">🐾</span>
+                    <span class="text-xl font-bold gradient-text">宠物之家</span>
+                </a>
+                <div class="desktop-nav items-center gap-1">
+                    <a href="index.html" class="px-3 py-2 rounded-2xl text-sm font-medium text-warm-600 hover:text-primary-600 hover:bg-primary-50">首页</a>
+                    <a href="dogs.html" class="px-3 py-2 rounded-2xl text-sm font-medium text-warm-600 hover:text-primary-600 hover:bg-primary-50">🐶 犬科图鉴</a>
+                    <a href="cats.html" class="px-3 py-2 rounded-2xl text-sm font-semibold bg-primary-100 text-primary-700">🐱 猫科图鉴</a>
+                    <a href="science.html" class="px-3 py-2 rounded-2xl text-sm font-medium text-warm-600 hover:text-primary-600 hover:bg-primary-50">📖 饲养指南</a>
+                    <div class="relative ml-2">
+                        <input type="text" id="searchInput" placeholder="搜索宠物..." class="search-box w-32 px-3 py-1.5 text-sm border border-primary-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent bg-white/80" onkeyup="searchPets(this.value)">
+                        <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-warm-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </div>
+                    <a href="logout.html" class="ml-2 px-3 py-2 rounded-2xl text-sm font-medium text-warm-500 hover:text-red-500 hover:bg-red-50">退出</a>
+                </div>
+                <a href="index.html" class="mobile-nav p-2 rounded-2xl hover:bg-primary-50">
+                    <svg class="w-6 h-6 text-warm-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="sidebar-mobile-btn sticky top-16 z-40 bg-white/90 backdrop-blur-sm border-b border-primary-200/30 px-4 py-3">
+        <button onclick="toggleSidebar()" class="flex items-center gap-2 text-sm font-medium text-warm-700">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
+            猫种分类菜单
+        </button>
+    </div>
+
+    <div id="sidebarOverlay" class="sidebar-overlay fixed inset-0 bg-black/50 z-40" onclick="toggleSidebar()"></div>
+
+    <div class="flex flex-col md:flex-row flex-1 max-w-7xl mx-auto w-full">
+        <aside id="sidebar" class="w-72 bg-white border-r border-primary-100 overflow-y-auto p-4 shrink-0 md:relative fixed inset-y-0 left-0 z-50 md:z-auto mobile-hidden md:transform-none">
+            <div class="flex items-center justify-between mb-4 px-3">
+                <h3 class="text-sm font-bold text-warm-400">🐱 猫科分类</h3>
+                <button onclick="toggleSidebar()" class="md:hidden p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="space-y-2">
+                <div>
+                    <button onclick="toggleMenu('british-menu', this)" class="w-full text-left px-3 py-2.5 rounded-2xl text-warm-700 font-medium hover:bg-primary-50 flex justify-between items-center">
+                        英国短毛猫系 <span class="arrow transition-transform duration-200 rotate-90 text-xs text-warm-400">▶</span>
+                    </button>
+                    <div id="british-menu" class="pl-6 pr-2 mt-1 space-y-1 block">
+                        <button class="sidebar-item active w-full text-left px-3 py-2 rounded-2xl text-sm text-warm-600 hover:bg-primary-50" onclick="showContent('blue-cat', this)">蓝猫</button>
+                        <button class="sidebar-item w-full text-left px-3 py-2 rounded-2xl text-sm text-warm-600 hover:bg-primary-50" onclick="showContent('silver-cat', this)">银渐层</button>
+                        <button class="sidebar-item w-full text-left px-3 py-2 rounded-2xl text-sm text-warm-600 hover:bg-primary-50" onclick="showContent('golden-cat', this)">金渐层</button>
+                    </div>
+                </div>
+                <div>
+                    <button onclick="toggleMenu('ragdoll-menu', this)" class="w-full text-left px-3 py-2.5 rounded-2xl text-warm-700 font-medium hover:bg-primary-50 flex justify-between items-center">
+                        布偶猫系 <span class="arrow transition-transform duration-200 text-xs text-warm-400">▶</span>
+                    </button>
+                    <div id="ragdoll-menu" class="hidden pl-6 pr-2 mt-1 space-y-1">
+                        <button class="sidebar-item w-full text-left px-3 py-2 rounded-2xl text-sm text-warm-600 hover:bg-primary-50" onclick="showContent('bicolor-ragdoll', this)">双色布偶</button>
+                        <button class="sidebar-item w-full text-left px-3 py-2 rounded-2xl text-sm text-warm-600 hover:bg-primary-50" onclick="showContent('colorpoint-ragdoll', this)">重点色布偶</button>
+                    </div>
+                </div>
+                <button class="sidebar-item w-full text-left px-3 py-2.5 rounded-2xl text-warm-700 font-medium hover:bg-primary-50" onclick="showContent('maine-coon', this)">缅因猫</button>
+                <button class="sidebar-item w-full text-left px-3 py-2.5 rounded-2xl text-warm-700 font-medium hover:bg-primary-50" onclick="showContent('siamese', this)">暹罗猫</button>
+                <div>
+                    <button onclick="toggleMenu('persian-menu', this)" class="w-full text-left px-3 py-2.5 rounded-2xl text-warm-700 font-medium hover:bg-primary-50 flex justify-between items-center">
+                        波斯猫系 <span class="arrow transition-transform duration-200 text-xs text-warm-400">▶</span>
+                    </button>
+                    <div id="persian-menu" class="hidden pl-6 pr-2 mt-1 space-y-1">
+                        <button class="sidebar-item w-full text-left px-3 py-2 rounded-2xl text-sm text-warm-600 hover:bg-primary-50" onclick="showContent('persian', this)">波斯猫</button>
+                        <button class="sidebar-item w-full text-left px-3 py-2 rounded-2xl text-sm text-warm-600 hover:bg-primary-50" onclick="showContent('chinchilla', this)">金吉拉</button>
+                    </div>
+                </div>
+                <button class="sidebar-item w-full text-left px-3 py-2.5 rounded-2xl text-warm-700 font-medium hover:bg-primary-50" onclick="showContent('scottish-fold', this)">苏格兰折耳猫</button>
+                <button class="sidebar-item w-full text-left px-3 py-2.5 rounded-2xl text-warm-700 font-medium hover:bg-primary-50" onclick="showContent('munchkin', this)">曼基康矮脚猫</button>
+                <button class="sidebar-item w-full text-left px-3 py-2.5 rounded-2xl text-warm-700 font-medium hover:bg-primary-50" onclick="showContent('bengal', this)">孟加拉豹猫</button>
+                <button class="sidebar-item w-full text-left px-3 py-2.5 rounded-2xl text-warm-700 font-medium hover:bg-primary-50" onclick="showContent('sphynx', this)">斯芬克斯无毛猫</button>
+            </div>
+        </aside>
+
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-cream">
+
+            <!-- 蓝猫 -->
+            <div id="blue-cat" class="content-section active max-w-4xl mx-auto">
+                <div class="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm border border-primary-100/50">
+                    <div class="flex flex-col md:flex-row gap-6 mb-6">
+                        <img src="蓝猫.jpg" alt="英短蓝猫" class="w-full md:w-1/3 rounded-2xl object-cover shadow aspect-square">
+                        <div class="flex-1">
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-warm-800 mb-2">英国短毛猫 - 蓝猫</h2>
+                            <p class="text-warm-500 mb-4">圆胖脸蛋的安静陪伴者</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-primary-50 text-primary-700 px-3 py-1 rounded-full text-sm">短毛猫</span>
+                                <span class="bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm">性格安静</span>
+                                <span class="bg-primary-50 text-primary-700 px-3 py-1 rounded-full text-sm">易胖体质</span>
+                                <span class="bg-yellow-50 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">⭐ 适合新手</span>
+                            </div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-sm text-warm-600 font-medium">饲养难度：</span>
+                                <span class="star-filled text-lg">★★</span><span class="star-empty text-lg">★★★</span>
+                                <span class="text-xs text-warm-400 ml-1">（较低）</span>
+                            </div>
+                            <p class="text-warm-600 leading-relaxed text-sm sm:text-base">最经典的英短毛色，拥有圆圆的脸蛋和粗壮的四肢。性格温顺安静，适应能力强，非常适合在公寓内饲养。</p>
+                        </div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">🩺 饲养建议</h3>
+                            <ul class="space-y-3 text-warm-600 text-sm">
+                                <li>⚖️ <strong>控制体重：</strong> 极易发胖，过胖会导致心脏和关节负担，需定时定量喂食。</li>
+                                <li>🧹 <strong>勤梳毛发：</strong> 虽然是短毛，但毛发浓密，掉毛量依然可观，需每周梳理。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">📏 基础指标</h3>
+                            <div class="space-y-2 text-sm text-warm-600">
+                                <p>平均体重：4 - 8 kg</p>
+                                <p>平均寿命：12 - 15 年</p>
+                                <p>粘人程度：⭐⭐⭐</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 银渐层 -->
+            <div id="silver-cat" class="content-section max-w-4xl mx-auto">
+                <div class="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm border border-primary-100/50">
+                    <div class="flex flex-col md:flex-row gap-6 mb-6">
+                        <img src="银渐层.jpg" alt="银渐层" class="w-full md:w-1/3 rounded-2xl object-cover shadow aspect-square">
+                        <div class="flex-1">
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-warm-800 mb-2">英国短毛猫 - 银渐层</h2>
+                            <p class="text-warm-500 mb-4">仙气飘飘的小煤气罐</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">银色被毛</span>
+                                <span class="bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm">活泼亲人</span>
+                                <span class="bg-yellow-50 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">⭐ 适合新手</span>
+                            </div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-sm text-warm-600 font-medium">饲养难度：</span>
+                                <span class="star-filled text-lg">★★</span><span class="star-empty text-lg">★★★</span>
+                                <span class="text-xs text-warm-400 ml-1">（较低）</span>
+                            </div>
+                            <p class="text-warm-600 leading-relaxed text-sm sm:text-base">底层绒毛为纯白色，毛尖带有黑色，看起来呈现银色光泽。性格同样温和，但通常比蓝猫稍微活泼好动一些。</p>
+                        </div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">🩺 饲养建议</h3>
+                            <ul class="space-y-3 text-warm-600 text-sm">
+                                <li>💧 <strong>泪痕清理：</strong> 面部扁平容易流眼泪产生泪痕，需要经常用湿巾擦拭眼角。</li>
+                                <li>🥣 <strong>肠胃敏感：</strong> 部分银渐层肠胃较弱，换粮需要遵循7天过渡法。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">📏 基础指标</h3>
+                            <div class="space-y-2 text-sm text-warm-600">
+                                <p>平均体重：3.5 - 7 kg</p>
+                                <p>平均寿命：12 - 15 年</p>
+                                <p>粘人程度：⭐⭐⭐⭐</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 双色布偶 -->
+            <div id="bicolor-ragdoll" class="content-section max-w-4xl mx-auto">
+                <div class="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm border border-primary-100/50">
+                    <div class="flex flex-col md:flex-row gap-6 mb-6">
+                        <img src="双色布偶.jpg" alt="双色布偶" class="w-full md:w-1/3 rounded-2xl object-cover shadow aspect-square">
+                        <div class="flex-1">
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-warm-800 mb-2">布偶猫 - 双色</h2>
+                            <p class="text-warm-500 mb-4">标志性的倒V脸仙女</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-pink-50 text-pink-700 px-3 py-1 rounded-full text-sm">超长毛</span>
+                                <span class="bg-primary-50 text-primary-700 px-3 py-1 rounded-full text-sm">星辰蓝眼</span>
+                            </div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-sm text-warm-600 font-medium">饲养难度：</span>
+                                <span class="star-filled text-lg">★★★</span><span class="star-empty text-lg">★★</span>
+                                <span class="text-xs text-warm-400 ml-1">（中等）</span>
+                            </div>
+                            <p class="text-warm-600 leading-relaxed text-sm sm:text-base">脸部拥有标志性的倒V字白色斑块。以极其温顺的性格和像布娃娃一样被抱起时全身放松而得名，极度依赖主人。</p>
+                        </div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">🩺 饲养建议</h3>
+                            <ul class="space-y-3 text-warm-600 text-sm">
+                                <li>🥣 <strong>典型玻璃胃：</strong> 肠道非常脆弱，极易软便，需要常备益生菌和优质猫粮。</li>
+                                <li>✂️ <strong>毛发打结：</strong> 细软的长毛极易打结，必须每天梳理底绒。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">📏 基础指标</h3>
+                            <div class="space-y-2 text-sm text-warm-600">
+                                <p>平均体重：4.5 - 9 kg</p>
+                                <p>体型：大型长毛猫</p>
+                                <p>粘人程度：⭐⭐⭐⭐⭐</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 重点色布偶 -->
+            <div id="colorpoint-ragdoll" class="content-section max-w-4xl mx-auto">
+                <div class="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm border border-primary-100/50">
+                    <div class="flex flex-col md:flex-row gap-6 mb-6">
+                        <img src="重点色布偶.jpg" alt="重点色布偶" class="w-full md:w-1/3 rounded-2xl object-cover shadow aspect-square">
+                        <div class="flex-1">
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-warm-800 mb-2">布偶猫 - 重点色</h2>
+                            <p class="text-warm-500 mb-4">蓝眼黑脸的小挖煤工</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">变色基因</span>
+                                <span class="bg-primary-50 text-primary-700 px-3 py-1 rounded-full text-sm">极致温顺</span>
+                            </div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-sm text-warm-600 font-medium">饲养难度：</span>
+                                <span class="star-filled text-lg">★★★</span><span class="star-empty text-lg">★★</span>
+                                <span class="text-xs text-warm-400 ml-1">（中等）</span>
+                            </div>
+                            <p class="text-warm-600 leading-relaxed text-sm sm:text-base">脸部、耳朵、四肢和尾巴带有深色（重点色），体态和性格与双色布偶完全一致，同样是粘人精。</p>
+                        </div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">🩺 饲养建议</h3>
+                            <ul class="space-y-3 text-warm-600 text-sm">
+                                <li>🌡️ <strong>越冷越黑：</strong> 重点色基因受温度影响，气温越低，毛发颜色越深，冬天要注意保暖。</li>
+                                <li>🏠 <strong>纯室内：</strong> 缺乏野外生存和自我防御能力，严禁散养。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">📏 基础指标</h3>
+                            <div class="space-y-2 text-sm text-warm-600">
+                                <p>平均体重：4.5 - 9 kg</p>
+                                <p>体型：大型长毛猫</p>
+                                <p>粘人程度：⭐⭐⭐⭐⭐</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 缅因猫 -->
+            <div id="maine-coon" class="content-section max-w-4xl mx-auto">
+                <div class="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm border border-primary-100/50">
+                    <div class="flex flex-col md:flex-row gap-6 mb-6">
+                        <img src="缅因猫.jpg" alt="缅因猫" class="w-full md:w-1/3 rounded-2xl object-cover shadow aspect-square">
+                        <div class="flex-1">
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-warm-800 mb-2">缅因猫 (Maine Coon)</h2>
+                            <p class="text-warm-500 mb-4">外表威武的温柔巨人</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-sm">体型巨大</span>
+                                <span class="bg-yellow-50 text-yellow-700 px-3 py-1 rounded-full text-sm">猞猁耳毛</span>
+                                <span class="bg-red-50 text-red-700 px-3 py-1 rounded-full text-sm font-medium">⚠️ 不适合新手</span>
+                            </div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-sm text-warm-600 font-medium">饲养难度：</span>
+                                <span class="star-filled text-lg">★★★★</span><span class="star-empty text-lg">★</span>
+                                <span class="text-xs text-warm-400 ml-1">（较高）</span>
+                            </div>
+                            <p class="text-warm-600 leading-relaxed text-sm sm:text-base">体型最大的家猫品种之一，拥有厚实的脚掌、猞猁般的耳毛和蓬松的尾巴。虽然外表威猛霸气，但声音细小如小鸟，性格非常稳重友善。</p>
+                        </div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">🩺 饲养建议</h3>
+                            <ul class="space-y-3 text-warm-600 text-sm">
+                                <li>❤️ <strong>心脏健康：</strong> 易患肥厚型心肌病（HCM），每年需进行心脏超声体检。</li>
+                                <li>🛁 <strong>洗澡工程：</strong> 体型巨大且毛发防水，洗澡和吹干对体力是极大的考验。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">📏 基础指标</h3>
+                            <div class="space-y-2 text-sm text-warm-600">
+                                <p>体长：可超过 1 米</p>
+                                <p>平均体重：6 - 11 kg</p>
+                                <p>成熟期：需 3-5 年才完全发育</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 暹罗猫 -->
+            <div id="siamese" class="content-section max-w-4xl mx-auto">
+                <div class="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm border border-primary-100/50">
+                    <div class="flex flex-col md:flex-row gap-6 mb-6">
+                        <img src="暹罗猫.jpg" alt="暹罗猫" class="w-full md:w-1/3 rounded-2xl object-cover shadow aspect-square">
+                        <div class="flex-1">
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-warm-800 mb-2">暹罗猫 (Siamese)</h2>
+                            <p class="text-warm-500 mb-4">活泼好动的小话痨</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-purple-50 text-purple-700 px-3 py-1 rounded-full text-sm">猫中之狗</span>
+                                <span class="bg-primary-50 text-primary-700 px-3 py-1 rounded-full text-sm">究极话痨</span>
+                            </div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-sm text-warm-600 font-medium">饲养难度：</span>
+                                <span class="star-filled text-lg">★★★</span><span class="star-empty text-lg">★★</span>
+                                <span class="text-xs text-warm-400 ml-1">（中等）</span>
+                            </div>
+                            <p class="text-warm-600 leading-relaxed text-sm sm:text-base">原产于泰国，体态修长。被誉为"猫中之狗"，智商很高，甚至可以训练捡球。极度依赖人类，并且非常喜欢用叫声和主人"聊天"。</p>
+                        </div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">🩺 饲养建议</h3>
+                            <ul class="space-y-3 text-warm-600 text-sm">
+                                <li>🗣️ <strong>噪音预警：</strong> 叫声大且频繁，如果不喜欢吵闹的环境，请谨慎饲养。</li>
+                                <li>🌡️ <strong>保暖防黑：</strong> 同样携带重点色基因，温度低时会全身变黑，冬天需穿衣服保暖。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">📏 基础指标</h3>
+                            <div class="space-y-2 text-sm text-warm-600">
+                                <p>平均体重：3 - 5.5 kg</p>
+                                <p>平均寿命：15 - 20 年</p>
+                                <p>粘人程度：⭐⭐⭐⭐⭐</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 金渐层 -->
+            <div id="golden-cat" class="content-section max-w-4xl mx-auto">
+                <div class="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm border border-primary-100/50">
+                    <div class="flex flex-col md:flex-row gap-6 mb-6">
+                        <img src="金渐层.jpg" alt="金渐层" class="w-full md:w-1/3 rounded-2xl object-cover shadow aspect-square">
+                        <div class="flex-1">
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-warm-800 mb-2">英国短毛猫 - 金渐层</h2>
+                            <p class="text-warm-500 mb-4">金光闪闪的小太阳</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-yellow-50 text-yellow-700 px-3 py-1 rounded-full text-sm">金色被毛</span>
+                                <span class="bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm">性格温顺</span>
+                                <span class="bg-yellow-50 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">⭐ 适合新手</span>
+                            </div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-sm text-warm-600 font-medium">饲养难度：</span>
+                                <span class="star-filled text-lg">★★</span><span class="star-empty text-lg">★★★</span>
+                                <span class="text-xs text-warm-400 ml-1">（较低）</span>
+                            </div>
+                            <p class="text-warm-600 leading-relaxed text-sm sm:text-base">底层绒毛为奶黄色，毛尖带有金色，整体呈现温暖的金色光泽。性格和蓝猫一样温顺，但外形更加华丽，是近年来最受欢迎的英短色系之一。</p>
+                        </div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">🩺 饲养建议</h3>
+                            <ul class="space-y-3 text-warm-600 text-sm">
+                                <li>⚖️ <strong>控制饮食：</strong> 和蓝猫一样容易发胖，需定时定量喂食，避免零食过量。</li>
+                                <li>💧 <strong>泪痕管理：</strong> 面部结构扁平，容易产生泪痕，需定期清理眼角。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">📏 基础指标</h3>
+                            <div class="space-y-2 text-sm text-warm-600">
+                                <p>平均体重：4 - 8 kg</p>
+                                <p>平均寿命：12 - 15 年</p>
+                                <p>粘人程度：⭐⭐⭐⭐</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 波斯猫 -->
+            <div id="persian" class="content-section max-w-4xl mx-auto">
+                <div class="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm border border-primary-100/50">
+                    <div class="flex flex-col md:flex-row gap-6 mb-6">
+                        <img src="波斯猫.jpg" alt="波斯猫" class="w-full md:w-1/3 rounded-2xl object-cover shadow aspect-square">
+                        <div class="flex-1">
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-warm-800 mb-2">波斯猫 (Persian)</h2>
+                            <p class="text-warm-500 mb-4">雍容华贵的猫中贵族</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-pink-50 text-pink-700 px-3 py-1 rounded-full text-sm">超长毛</span>
+                                <span class="bg-purple-50 text-purple-700 px-3 py-1 rounded-full text-sm">扁脸</span>
+                                <span class="bg-yellow-50 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">⭐ 适合新手</span>
+                            </div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-sm text-warm-600 font-medium">饲养难度：</span>
+                                <span class="star-filled text-lg">★★</span><span class="star-empty text-lg">★★★</span>
+                                <span class="text-xs text-warm-400 ml-1">（较低）</span>
+                            </div>
+                            <p class="text-warm-600 leading-relaxed text-sm sm:text-base">最古老的猫品种之一，拥有华丽蓬松的长毛和扁平的面部。性格安静温和，喜欢安静地趴在沙发上观察主人，是典型的"室内猫"。</p>
+                        </div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">🩺 饲养建议</h3>
+                            <ul class="space-y-3 text-warm-600 text-sm">
+                                <li>✂️ <strong>每日梳毛：</strong> 长毛极易打结，必须每天梳理，否则会出现严重的毛球问题。</li>
+                                <li>💧 <strong>泪痕清理：</strong> 扁脸结构导致泪管堵塞，每天需用湿棉片擦拭眼部。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">📏 基础指标</h3>
+                            <div class="space-y-2 text-sm text-warm-600">
+                                <p>平均体重：3.5 - 7 kg</p>
+                                <p>平均寿命：12 - 17 年</p>
+                                <p>粘人程度：⭐⭐⭐</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 金吉拉 -->
+            <div id="chinchilla" class="content-section max-w-4xl mx-auto">
+                <div class="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm border border-primary-100/50">
+                    <div class="flex flex-col md:flex-row gap-6 mb-6">
+                        <img src="金吉拉.jpg" alt="金吉拉" class="w-full md:w-1/3 rounded-2xl object-cover shadow aspect-square">
+                        <div class="flex-1">
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-warm-800 mb-2">金吉拉 (Chinchilla)</h2>
+                            <p class="text-warm-500 mb-4">绿宝石眼的银色精灵</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">银白毛尖</span>
+                                <span class="bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm">绿眼睛</span>
+                                <span class="bg-yellow-50 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">⭐ 适合新手</span>
+                            </div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-sm text-warm-600 font-medium">饲养难度：</span>
+                                <span class="star-filled text-lg">★★★</span><span class="star-empty text-lg">★★</span>
+                                <span class="text-xs text-warm-400 ml-1">（中等）</span>
+                            </div>
+                            <p class="text-warm-600 leading-relaxed text-sm sm:text-base">波斯猫的一个色系分支，底层绒毛为纯白色，毛尖带有黑色，呈现迷人的银色光泽。标志性的翡翠绿眼睛和黑色眼线让它们看起来格外优雅。</p>
+                        </div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">🩺 饲养建议</h3>
+                            <ul class="space-y-3 text-warm-600 text-sm">
+                                <li>🧹 <strong>毛发护理：</strong> 长毛需要每天梳理，换毛期掉毛量巨大。</li>
+                                <li>💧 <strong>泪痕严重：</strong> 扁脸导致泪痕问题突出，需每天清理，否则毛发会被染色。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">📏 基础指标</h3>
+                            <div class="space-y-2 text-sm text-warm-600">
+                                <p>平均体重：3 - 6 kg</p>
+                                <p>平均寿命：12 - 15 年</p>
+                                <p>粘人程度：⭐⭐⭐⭐</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 苏格兰折耳猫 -->
+            <div id="scottish-fold" class="content-section max-w-4xl mx-auto">
+                <div class="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm border border-primary-100/50">
+                    <div class="flex flex-col md:flex-row gap-6 mb-6">
+                        <img src="苏格兰折耳猫.jpg" alt="苏格兰折耳猫" class="w-full md:w-1/3 rounded-2xl object-cover shadow aspect-square">
+                        <div class="flex-1">
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-warm-800 mb-2">苏格兰折耳猫 (Scottish Fold)</h2>
+                            <p class="text-warm-500 mb-4">折耳小猫头鹰</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-primary-50 text-primary-700 px-3 py-1 rounded-full text-sm">折耳</span>
+                                <span class="bg-pink-50 text-pink-700 px-3 py-1 rounded-full text-sm">圆脸圆眼</span>
+                                <span class="bg-red-50 text-red-700 px-3 py-1 rounded-full text-sm font-medium">⚠️ 需谨慎饲养</span>
+                            </div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-sm text-warm-600 font-medium">饲养难度：</span>
+                                <span class="star-filled text-lg">★★★</span><span class="star-empty text-lg">★★</span>
+                                <span class="text-xs text-warm-400 ml-1">（中等）</span>
+                            </div>
+                            <p class="text-warm-600 leading-relaxed text-sm sm:text-base">因软骨基因导致耳朵向前折叠，看起来像猫头鹰。脸型圆润，眼睛又大又圆，表情呆萌。性格温和安静，喜欢像人一样"坐"着。</p>
+                        </div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">🩺 饲养建议</h3>
+                            <ul class="space-y-3 text-warm-600 text-sm">
+                                <li>🦴 <strong>骨骼问题：</strong> 折耳基因会导致软骨发育异常，需定期体检，关注关节健康。</li>
+                                <li>🚫 <strong>繁育伦理：</strong> 严禁两只折耳猫交配，会严重加重遗传疾病。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">📏 基础指标</h3>
+                            <div class="space-y-2 text-sm text-warm-600">
+                                <p>平均体重：3 - 6 kg</p>
+                                <p>平均寿命：11 - 14 年</p>
+                                <p>粘人程度：⭐⭐⭐⭐</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 曼基康矮脚猫 -->
+            <div id="munchkin" class="content-section max-w-4xl mx-auto">
+                <div class="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm border border-primary-100/50">
+                    <div class="flex flex-col md:flex-row gap-6 mb-6">
+                        <img src="曼基康.jpg" alt="曼基康矮脚猫" class="w-full md:w-1/3 rounded-2xl object-cover shadow aspect-square">
+                        <div class="flex-1">
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-warm-800 mb-2">曼基康矮脚猫 (Munchkin)</h2>
+                            <p class="text-warm-500 mb-4">柯基同款小短腿</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-primary-50 text-primary-700 px-3 py-1 rounded-full text-sm">短腿</span>
+                                <span class="bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm">活泼好动</span>
+                                <span class="bg-yellow-50 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">⭐ 适合新手</span>
+                            </div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-sm text-warm-600 font-medium">饲养难度：</span>
+                                <span class="star-filled text-lg">★★</span><span class="star-empty text-lg">★★★</span>
+                                <span class="text-xs text-warm-400 ml-1">（较低）</span>
+                            </div>
+                            <p class="text-warm-600 leading-relaxed text-sm sm:text-base">因基因突变导致四肢短小，但脊椎和内脏与其他猫完全一样。虽然腿短，但奔跑速度和跳跃能力并不差，性格活泼开朗，好奇心极强。</p>
+                        </div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">🩺 饲养建议</h3>
+                            <ul class="space-y-3 text-warm-600 text-sm">
+                                <li>⚖️ <strong>控制体重：</strong> 短腿承重能力有限，过胖会加重关节负担。</li>
+                                <li>🦴 <strong>保护脊椎：</strong> 避免从高处跳下，可提供台阶或坡道辅助上下。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">📏 基础指标</h3>
+                            <div class="space-y-2 text-sm text-warm-600">
+                                <p>平均体重：3 - 5 kg</p>
+                                <p>平均寿命：12 - 15 年</p>
+                                <p>粘人程度：⭐⭐⭐⭐</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 孟加拉豹猫 -->
+            <div id="bengal" class="content-section max-w-4xl mx-auto">
+                <div class="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm border border-primary-100/50">
+                    <div class="flex flex-col md:flex-row gap-6 mb-6">
+                        <img src="孟加拉豹猫.jpg" alt="孟加拉豹猫" class="w-full md:w-1/3 rounded-2xl object-cover shadow aspect-square">
+                        <div class="flex-1">
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-warm-800 mb-2">孟加拉豹猫 (Bengal)</h2>
+                            <p class="text-warm-500 mb-4">家养的小豹子</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-amber-50 text-amber-700 px-3 py-1 rounded-full text-sm">豹纹斑点</span>
+                                <span class="bg-red-50 text-red-700 px-3 py-1 rounded-full text-sm">精力旺盛</span>
+                                <span class="bg-red-50 text-red-700 px-3 py-1 rounded-full text-sm font-medium">⚠️ 不适合新手</span>
+                            </div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-sm text-warm-600 font-medium">饲养难度：</span>
+                                <span class="star-filled text-lg">★★★★</span><span class="star-empty text-lg">★</span>
+                                <span class="text-xs text-warm-400 ml-1">（较高）</span>
+                            </div>
+                            <p class="text-warm-600 leading-relaxed text-sm sm:text-base">由亚洲豹纹猫与家猫杂交培育而成，拥有华丽的豹纹或大理石纹被毛。性格极其活泼，精力充沛，智商很高，需要大量运动和精神刺激。</p>
+                        </div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">🩺 饲养建议</h3>
+                            <ul class="space-y-3 text-warm-600 text-sm">
+                                <li>🏃 <strong>极高运动量：</strong> 需要猫爬架、互动玩具和大量陪玩时间，否则会拆家。</li>
+                                <li>🧠 <strong>精神刺激：</strong> 智商极高，需要益智玩具和训练来消耗脑力。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">📏 基础指标</h3>
+                            <div class="space-y-2 text-sm text-warm-600">
+                                <p>平均体重：4 - 8 kg</p>
+                                <p>平均寿命：12 - 16 年</p>
+                                <p>粘人程度：⭐⭐⭐⭐</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 斯芬克斯无毛猫 -->
+            <div id="sphynx" class="content-section max-w-4xl mx-auto">
+                <div class="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm border border-primary-100/50">
+                    <div class="flex flex-col md:flex-row gap-6 mb-6">
+                        <img src="斯芬克斯.jpg" alt="斯芬克斯无毛猫" class="w-full md:w-1/3 rounded-2xl object-cover shadow aspect-square">
+                        <div class="flex-1">
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-warm-800 mb-2">斯芬克斯无毛猫 (Sphynx)</h2>
+                            <p class="text-warm-500 mb-4">外星来的小精灵</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">无毛</span>
+                                <span class="bg-primary-50 text-primary-700 px-3 py-1 rounded-full text-sm">极度粘人</span>
+                                <span class="bg-red-50 text-red-700 px-3 py-1 rounded-full text-sm font-medium">⚠️ 不适合新手</span>
+                            </div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-sm text-warm-600 font-medium">饲养难度：</span>
+                                <span class="star-filled text-lg">★★★★</span><span class="star-empty text-lg">★</span>
+                                <span class="text-xs text-warm-400 ml-1">（较高）</span>
+                            </div>
+                            <p class="text-warm-600 leading-relaxed text-sm sm:text-base">因基因突变导致全身几乎无毛，皮肤皱褶且温暖。性格极其粘人，被称为"猫中之狗"的升级版，会像小狗一样迎接主人，冬天喜欢钻被窝取暖。</p>
+                        </div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">🩺 饲养建议</h3>
+                            <ul class="space-y-3 text-warm-600 text-sm">
+                                <li>🧴 <strong>皮肤护理：</strong> 无毛皮肤容易出油，需每周洗澡，注意防晒和保暖。</li>
+                                <li>🌡️ <strong>温度敏感：</strong> 怕冷也怕晒，冬天需穿衣保暖，夏天需防晒。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">📏 基础指标</h3>
+                            <div class="space-y-2 text-sm text-warm-600">
+                                <p>平均体重：3.5 - 7 kg</p>
+                                <p>平均寿命：8 - 14 年</p>
+                                <p>粘人程度：⭐⭐⭐⭐⭐</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+        <img id="lightboxImg" src="" alt="大图预览">
+    </div>
+
+    <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" class="fixed bottom-6 right-6 z-50 w-12 h-12 bg-gradient-to-br from-primary-400 to-primary-600 text-white rounded-full shadow-lg shadow-primary-500/30 flex items-center justify-center hover:-translate-y-1 hover:shadow-xl transition-all">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+    </button>
+
+    <script>
+        function toggleMenu(menuId, btn) {
+            const menu = document.getElementById(menuId);
+            const arrow = btn.querySelector('.arrow');
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                menu.classList.add('block');
+                arrow.classList.add('rotate-90');
+            } else {
+                menu.classList.remove('block');
+                menu.classList.add('hidden');
+                arrow.classList.remove('rotate-90');
+            }
+        }
+
+        function showContent(contentId, btn) {
+            document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(contentId).classList.add('active');
+            btn.classList.add('active');
+            if (window.innerWidth < 769) toggleSidebar();
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('mobile-hidden');
+            sidebar.classList.toggle('mobile-show');
+            overlay.classList.toggle('active');
+        }
+
+        if (window.innerWidth >= 769) {
+            document.getElementById('sidebar').classList.remove('mobile-hidden');
+        }
+
+        function searchPets(keyword) {
+            keyword = keyword.toLowerCase().trim();
+            const sections = document.querySelectorAll('.content-section');
+            const sidebarItems = document.querySelectorAll('.sidebar-item');
+
+            if (!keyword) return;
+
+            const genericKeywords = ['猫', '宠物', '品种', '图鉴', '科普'];
+            if (genericKeywords.includes(keyword)) {
+                alert('请输入更具体的宠物名称，如：蓝猫、布偶、暹罗、折耳、豹猫');
+                return;
+            }
+
+            let firstMatchId = null;
+
+            sections.forEach(section => {
+                const text = section.textContent.toLowerCase();
+                if (text.includes(keyword) && !firstMatchId) {
+                    firstMatchId = section.id;
+                }
+            });
+
+            if (firstMatchId) {
+                sidebarItems.forEach(item => {
+                    item.classList.remove('active');
+                    if (item.getAttribute('onclick') && item.getAttribute('onclick').includes(firstMatchId)) {
+                        item.classList.add('active');
+                        const parentMenu = item.closest('.space-y-1');
+                        if (parentMenu && parentMenu.classList.contains('hidden')) {
+                            parentMenu.classList.remove('hidden');
+                            parentMenu.classList.add('block');
+                            const arrow = parentMenu.previousElementSibling.querySelector('.arrow');
+                            if (arrow) arrow.classList.add('rotate-90');
+                        }
+                    }
+                });
+
+                sections.forEach(s => s.classList.remove('active'));
+                document.getElementById(firstMatchId).classList.add('active');
+            } else {
+                alert('未找到匹配的宠物，请尝试其他关键词');
+            }
+        }
+
+        document.querySelectorAll('.content-section img').forEach(img => {
+            img.style.cursor = 'zoom-in';
+            img.addEventListener('click', function() {
+                const lightbox = document.getElementById('lightbox');
+                const lightboxImg = document.getElementById('lightboxImg');
+                lightboxImg.src = this.src;
+                lightboxImg.alt = this.alt;
+                lightbox.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+        });
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            lightbox.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeLightbox();
+        });
+
+        window.addEventListener('scroll', function() {
+            const btn = document.getElementById('backToTop');
+            if (window.scrollY > 300) {
+                btn.classList.add('show');
+            } else {
+                btn.classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>犬科图鉴 - 宠物之家</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { 50: '#FFF8E1', 100: '#FFECB3', 200: '#FFD54F', 300: '#FFB347', 400: '#FFA726', 500: '#FF9800', 600: '#FB8C00', 700: '#F57C00', 800: '#EF6C00', 900: '#E65100' },
+                        warm: { 50: '#FDF6E3', 100: '#FAEBD7', 200: '#F5DEB3', 300: '#DEB887', 400: '#D2A679', 500: '#C4956A', 600: '#A0522D', 700: '#8B4513', 800: '#6B3410', 900: '#4E2A0E' },
+                        cream: '#FDF6E3',
+                        peach: '#FFDAB9',
+                        sand: '#F5DEB3'
+                    },
+                    fontFamily: { sans: ['"Nunito"', '"Varela Round"', 'system-ui', '-apple-system', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&family=Varela+Round&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Nunito', 'Varela Round', system-ui, -apple-system, sans-serif; }
+        .gradient-text { background: linear-gradient(135deg, #FFB347, #FF9800, #E65100); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+        .sidebar-item.active { background: linear-gradient(135deg, #FFECB3, #FFDAB9); color: #E65100; font-weight: 600; border-right: 3px solid #E65100; }
+        #sidebar { transition: transform 0.3s ease-in-out; }
+        #sidebar.mobile-hidden { transform: translateX(-100%); }
+        #sidebar.mobile-show { transform: translateX(0); }
+        .sidebar-overlay { display: none; }
+        .sidebar-overlay.active { display: block; }
+        @media (max-width: 768px) {
+            .desktop-nav { display: none; }
+            .mobile-nav { display: flex; }
+        }
+        @media (min-width: 769px) {
+            .desktop-nav { display: flex; }
+            .mobile-nav { display: none; }
+            .sidebar-mobile-btn { display: none; }
+            #sidebar { transform: translateX(0) !important; }
+        }
+        .search-box { transition: all 0.3s ease; }
+        .search-box:focus { width: 200px; }
+        .lightbox { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; cursor: zoom-out; }
+        .lightbox.active { display: flex; }
+        .lightbox img { max-width: 90%; max-height: 90%; object-fit: contain; border-radius: 12px; }
+        #backToTop { opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+        #backToTop.show { opacity: 1; visibility: visible; }
+
+        /* 难度星级颜色 */
+        .star-filled { color: #FFB347; }
+        .star-empty { color: #DEB887; }
+    </style>
+</head>
+<body class="bg-cream min-h-screen flex flex-col">
+    <script>if(localStorage.getItem('isLogin') !== 'true') location.href = 'login.html';</script>
+
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm border-b border-primary-200/30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="index.html" class="flex items-center gap-2">
+                    <span class="text-2xl">🐾</span>
+                    <span class="text-xl font-bold gradient-text">宠物之家</span>
+                </a>
+                <div class="desktop-nav items-center gap-1">
+                    <a href="index.html" class="px-3 py-2 rounded-2xl text-sm font-medium text-warm-600 hover:text-primary-600 hover:bg-primary-50">首页</a>
+                    <a href="dogs.html" class="px-3 py-2 rounded-2xl text-sm font-semibold bg-primary-100 text-primary-700">🐶 犬科图鉴</a>
+                    <a href="cats.html" class="px-3 py-2 rounded-2xl text-sm font-medium text-warm-600 hover:text-primary-600 hover:bg-primary-50">🐱 猫科图鉴</a>
+                    <a href="science.html" class="px-3 py-2 rounded-2xl text-sm font-medium text-warm-600 hover:text-primary-600 hover:bg-primary-50">📖 饲养指南</a>
+                    <div class="relative ml-2">
+                        <input type="text" id="searchInput" placeholder="搜索宠物..." class="search-box w-32 px-3 py-1.5 text-sm border border-primary-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent bg-white/80" onkeyup="searchPets(this.value)">
+                        <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-warm-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </div>
+                    <a href="logout.html" class="ml-2 px-3 py-2 rounded-2xl text-sm font-medium text-warm-500 hover:text-red-500 hover:bg-red-50">退出</a>
+                </div>
+                <a href="index.html" class="mobile-nav p-2 rounded-2xl hover:bg-primary-50">
+                    <svg class="w-6 h-6 text-warm-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="sidebar-mobile-btn sticky top-16 z-40 bg-white/90 backdrop-blur-sm border-b border-primary-200/30 px-4 py-3">
+        <button onclick="toggleSidebar()" class="flex items-center gap-2 text-sm font-medium text-warm-700">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
+            犬种分类菜单
+        </button>
+    </div>
+
+    <div id="sidebarOverlay" class="sidebar-overlay fixed inset-0 bg-black/50 z-40" onclick="toggleSidebar()"></div>
+
+    <div class="flex flex-col md:flex-row flex-1 max-w-7xl mx-auto w-full">
+        <aside id="sidebar" class="w-72 bg-white border-r border-primary-100 overflow-y-auto p-4 shrink-0 md:relative fixed inset-y-0 left-0 z-50 md:z-auto mobile-hidden md:transform-none">
+            <div class="flex items-center justify-between mb-4 px-3">
+                <h3 class="text-sm font-bold text-warm-400">🐶 犬科分类</h3>
+                <button onclick="toggleSidebar()" class="md:hidden p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="space-y-2">
+                <div>
+                    <button onclick="toggleMenu('samoyed-menu', this)" class="w-full text-left px-3 py-2.5 rounded-2xl text-warm-700 font-medium hover:bg-primary-50 flex justify-between items-center">
+                        萨摩耶犬系 <span class="arrow transition-transform duration-200 rotate-90 text-xs text-warm-400">▶</span>
+                    </button>
+                    <div id="samoyed-menu" class="pl-6 pr-2 mt-1 space-y-1 block">
+                        <button class="sidebar-item active w-full text-left px-3 py-2 rounded-2xl text-sm text-warm-600 hover:bg-primary-50" onclick="showContent('std-samoyed', this)">标准萨摩耶</button>
+                        <button class="sidebar-item w-full text-left px-3 py-2 rounded-2xl text-sm text-warm-600 hover:bg-primary-50" onclick="showContent('usa-samoyed', this)">美式萨摩耶</button>
+                        <button class="sidebar-item w-full text-left px-3 py-2 rounded-2xl text-sm text-warm-600 hover:bg-primary-50" onclick="showContent('jp-samoyed', this)">日本萨摩耶</button>
+                    </div>
+                </div>
+                <div>
+                    <button onclick="toggleMenu('husky-menu', this)" class="w-full text-left px-3 py-2.5 rounded-2xl text-warm-700 font-medium hover:bg-primary-50 flex justify-between items-center">
+                        雪橇犬系 <span class="arrow transition-transform duration-200 text-xs text-warm-400">▶</span>
+                    </button>
+                    <div id="husky-menu" class="hidden pl-6 pr-2 mt-1 space-y-1">
+                        <button class="sidebar-item w-full text-left px-3 py-2 rounded-2xl text-sm text-warm-600 hover:bg-primary-50" onclick="showContent('siberian-husky', this)">西伯利亚哈士奇</button>
+                        <button class="sidebar-item w-full text-left px-3 py-2 rounded-2xl text-sm text-warm-600 hover:bg-primary-50" onclick="showContent('alaskan-malamute', this)">阿拉斯加雪橇犬</button>
+                    </div>
+                </div>
+                <div>
+                    <button onclick="toggleMenu('collie-menu', this)" class="w-full text-left px-3 py-2.5 rounded-2xl text-warm-700 font-medium hover:bg-primary-50 flex justify-between items-center">
+                        牧羊犬系 <span class="arrow transition-transform duration-200 text-xs text-warm-400">▶</span>
+                    </button>
+                    <div id="collie-menu" class="hidden pl-6 pr-2 mt-1 space-y-1">
+                        <button class="sidebar-item w-full text-left px-3 py-2 rounded-2xl text-sm text-warm-600 hover:bg-primary-50" onclick="showContent('black-border', this)">黑白边牧</button>
+                        <button class="sidebar-item w-full text-left px-3 py-2 rounded-2xl text-sm text-warm-600 hover:bg-primary-50" onclick="showContent('merle-border', this)">陨石边牧</button>
+                        <button class="sidebar-item w-full text-left px-3 py-2 rounded-2xl text-sm text-warm-600 hover:bg-primary-50" onclick="showContent('german-shepherd', this)">德国牧羊犬</button>
+                    </div>
+                </div>
+                <div>
+                    <button onclick="toggleMenu('corgi-menu', this)" class="w-full text-left px-3 py-2.5 rounded-2xl text-warm-700 font-medium hover:bg-primary-50 flex justify-between items-center">
+                        柯基犬系 <span class="arrow transition-transform duration-200 text-xs text-warm-400">▶</span>
+                    </button>
+                    <div id="corgi-menu" class="hidden pl-6 pr-2 mt-1 space-y-1">
+                        <button class="sidebar-item w-full text-left px-3 py-2 rounded-2xl text-sm text-warm-600 hover:bg-primary-50" onclick="showContent('pembroke-corgi', this)">彭布罗克柯基</button>
+                        <button class="sidebar-item w-full text-left px-3 py-2 rounded-2xl text-sm text-warm-600 hover:bg-primary-50" onclick="showContent('cardigan-corgi', this)">卡迪根柯基</button>
+                    </div>
+                </div>
+                <div>
+                    <button onclick="toggleMenu('retriever-menu', this)" class="w-full text-left px-3 py-2.5 rounded-2xl text-warm-700 font-medium hover:bg-primary-50 flex justify-between items-center">
+                        寻回犬系 <span class="arrow transition-transform duration-200 text-xs text-warm-400">▶</span>
+                    </button>
+                    <div id="retriever-menu" class="hidden pl-6 pr-2 mt-1 space-y-1">
+                        <button class="sidebar-item w-full text-left px-3 py-2 rounded-2xl text-sm text-warm-600 hover:bg-primary-50" onclick="showContent('english-golden', this)">英系金毛</button>
+                        <button class="sidebar-item w-full text-left px-3 py-2 rounded-2xl text-sm text-warm-600 hover:bg-primary-50" onclick="showContent('american-golden', this)">美系金毛</button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-cream">
+
+            <!-- 标准萨摩耶 -->
+            <div id="std-samoyed" class="content-section active max-w-4xl mx-auto">
+                <div class="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm border border-primary-100/50">
+                    <div class="flex flex-col md:flex-row gap-6 mb-6">
+                        <img src="标准萨摩耶.jpg" alt="标准萨摩耶" class="w-full md:w-1/3 rounded-2xl object-cover shadow aspect-square">
+                        <div class="flex-1">
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-warm-800 mb-2">标准萨摩耶 (Samoyed)</h2>
+                            <p class="text-warm-500 mb-4">西伯利亚的微笑天使</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-primary-50 text-primary-700 px-3 py-1 rounded-full text-sm">中大型犬</span>
+                                <span class="bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm">温顺友善</span>
+                                <span class="bg-orange-50 text-orange-700 px-3 py-1 rounded-full text-sm">掉毛怪</span>
+                                <span class="bg-yellow-50 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">⭐ 适合新手</span>
+                            </div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-sm text-warm-600 font-medium">饲养难度：</span>
+                                <span class="star-filled text-lg">★★★</span><span class="star-empty text-lg">★★</span>
+                                <span class="text-xs text-warm-400 ml-1">（中等）</span>
+                            </div>
+                            <p class="text-warm-600 leading-relaxed text-sm sm:text-base">来自西伯利亚，曾用于拉雪橇和看守驯鹿。以雪白蓬松的双层毛和标志性微笑闻名，是非常优秀的家庭伴侣犬。</p>
+                        </div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">🩺 饲养建议</h3>
+                            <ul class="space-y-3 text-warm-600 text-sm">
+                                <li>⚠️ <strong>严重掉毛：</strong> 需每日梳理，不适合毛发过敏家庭。</li>
+                                <li>🏃 <strong>运动量大：</strong> 每天需1.5-2小时户外活动，否则易拆家。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">📏 基础指标</h3>
+                            <div class="space-y-2 text-sm text-warm-600">
+                                <p>成年肩高：48-60 cm</p>
+                                <p>平均寿命：12-14 年</p>
+                                <p>智商排名：第 33 名</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 美式萨摩耶 -->
+            <div id="usa-samoyed" class="content-section max-w-4xl mx-auto">
+                <div class="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm border border-primary-100/50">
+                    <div class="flex flex-col md:flex-row gap-6 mb-6">
+                        <img src="美式萨摩耶.png" alt="美式萨摩耶" class="w-full md:w-1/3 rounded-2xl object-cover shadow aspect-square">
+                        <div class="flex-1">
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-warm-800 mb-2">美式萨摩耶</h2>
+                            <p class="text-warm-500 mb-4">骨架粗壮的北美系</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-primary-50 text-primary-700 px-3 py-1 rounded-full text-sm">骨架粗壮</span>
+                                <span class="bg-purple-50 text-purple-700 px-3 py-1 rounded-full text-sm">性格独立</span>
+                            </div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-sm text-warm-600 font-medium">饲养难度：</span>
+                                <span class="star-filled text-lg">★★★</span><span class="star-empty text-lg">★★</span>
+                                <span class="text-xs text-warm-400 ml-1">（中等）</span>
+                            </div>
+                            <p class="text-warm-600 leading-relaxed text-sm sm:text-base">由北美育种家培育，骨架粗壮，毛发更加丰厚蓬松。性格相对独立，不会过度粘人，服从性较好。</p>
+                        </div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">🩺 饲养建议</h3>
+                            <ul class="space-y-3 text-warm-600 text-sm">
+                                <li>✂️ <strong>毛发打理：</strong> 毛量极大，洗澡和吹干极度耗时。</li>
+                                <li>🧠 <strong>独立性强：</strong> 适合不希望狗狗24小时贴身的主人。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">📏 基础指标</h3>
+                            <div class="space-y-2 text-sm text-warm-600">
+                                <p>成年肩高：50-60 cm</p>
+                                <p>平均体重：20-30 kg</p>
+                                <p>智商排名：第 33 名</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 日本萨摩耶 -->
+            <div id="jp-samoyed" class="content-section max-w-4xl mx-auto">
+                <div class="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm border border-primary-100/50">
+                    <div class="flex flex-col md:flex-row gap-6 mb-6">
+                        <img src="日式萨摩耶.png" alt="日本萨摩耶" class="w-full md:w-1/3 rounded-2xl object-cover shadow aspect-square">
+                        <div class="flex-1">
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-warm-800 mb-2">日本萨摩耶</h2>
+                            <p class="text-warm-500 mb-4">活泼好动的小调皮</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-pink-50 text-pink-700 px-3 py-1 rounded-full text-sm">体型较小</span>
+                                <span class="bg-yellow-50 text-yellow-700 px-3 py-1 rounded-full text-sm">精力旺盛</span>
+                            </div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-sm text-warm-600 font-medium">饲养难度：</span>
+                                <span class="star-filled text-lg">★★★★</span><span class="star-empty text-lg">★</span>
+                                <span class="text-xs text-warm-400 ml-1">（较高）</span>
+                            </div>
+                            <p class="text-warm-600 leading-relaxed text-sm sm:text-base">体型较小，毛色通常比标准版更柔和。性格非常活泼好动，好奇心强，是个十足的"小调皮"。</p>
+                        </div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">🩺 饲养建议</h3>
+                            <ul class="space-y-3 text-warm-600 text-sm">
+                                <li>🏃 <strong>高频互动：</strong> 极度活泼，需要主人花大量时间陪伴玩耍。</li>
+                                <li>⚠️ <strong>警惕心：</strong> 相对标准版，对陌生环境可能更为敏感。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">📏 基础指标</h3>
+                            <div class="space-y-2 text-sm text-warm-600">
+                                <p>成年肩高：40-50 cm</p>
+                                <p>平均体重：15-20 kg</p>
+                                <p>智商排名：第 33 名</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 西伯利亚哈士奇 -->
+            <div id="siberian-husky" class="content-section max-w-4xl mx-auto">
+                <div class="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm border border-primary-100/50">
+                    <div class="flex flex-col md:flex-row gap-6 mb-6">
+                        <img src="西伯利亚哈士奇.jpg" alt="哈士奇" class="w-full md:w-1/3 rounded-2xl object-cover shadow aspect-square">
+                        <div class="flex-1">
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-warm-800 mb-2">西伯利亚哈士奇</h2>
+                            <p class="text-warm-500 mb-4">精力充沛的"撒手没"</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">雪橇三傻</span>
+                                <span class="bg-primary-50 text-primary-700 px-3 py-1 rounded-full text-sm">充沛精力</span>
+                                <span class="bg-red-50 text-red-700 px-3 py-1 rounded-full text-sm font-medium">⚠️ 不适合新手</span>
+                            </div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-sm text-warm-600 font-medium">饲养难度：</span>
+                                <span class="star-filled text-lg">★★★★</span><span class="star-empty text-lg">★</span>
+                                <span class="text-xs text-warm-400 ml-1">（较高）</span>
+                            </div>
+                            <p class="text-warm-600 leading-relaxed text-sm sm:text-base">性格极其友善但也极其固执，服从性较低，常以"拆家"闻名。</p>
+                        </div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">🩺 饲养建议</h3>
+                            <ul class="space-y-3 text-warm-600 text-sm">
+                                <li>🚪 <strong>防走失：</strong> 绝不能散养或无牵引绳出门，极易走失。</li>
+                                <li>❄️ <strong>怕热：</strong> 拥有极厚的双层毛，夏季需注意防暑降温。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">📏 基础指标</h3>
+                            <div class="space-y-2 text-sm text-warm-600">
+                                <p>成年肩高：50-60 cm</p>
+                                <p>平均体重：16-27 kg</p>
+                                <p>智商排名：第 45 名</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 阿拉斯加雪橇犬 -->
+            <div id="alaskan-malamute" class="content-section max-w-4xl mx-auto">
+                <div class="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm border border-primary-100/50">
+                    <div class="flex flex-col md:flex-row gap-6 mb-6">
+                        <img src="阿拉斯加雪橇犬.jpg" alt="阿拉斯加" class="w-full md:w-1/3 rounded-2xl object-cover shadow aspect-square">
+                        <div class="flex-1">
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-warm-800 mb-2">阿拉斯加雪橇犬</h2>
+                            <p class="text-warm-500 mb-4">憨厚稳重的力量担当</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-sm">大型犬</span>
+                                <span class="bg-red-50 text-red-700 px-3 py-1 rounded-full text-sm">力量极大</span>
+                            </div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-sm text-warm-600 font-medium">饲养难度：</span>
+                                <span class="star-filled text-lg">★★★★</span><span class="star-empty text-lg">★</span>
+                                <span class="text-xs text-warm-400 ml-1">（较高）</span>
+                            </div>
+                            <p class="text-warm-600 leading-relaxed text-sm sm:text-base">体型比哈士奇更大更敦实，性格相对稳重。</p>
+                        </div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">🩺 饲养建议</h3>
+                            <ul class="space-y-3 text-warm-600 text-sm">
+                                <li>💪 <strong>防爆冲：</strong> 力量极大，外出需佩戴防爆冲胸背带。</li>
+                                <li>🥣 <strong>肠胃脆弱：</strong> 被称为"雪橇三傻"中的玻璃胃。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">📏 基础指标</h3>
+                            <div class="space-y-2 text-sm text-warm-600">
+                                <p>成年肩高：58-71 cm</p>
+                                <p>平均体重：34-38 kg</p>
+                                <p>智商排名：第 50 名</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 黑白边牧 -->
+            <div id="black-border" class="content-section max-w-4xl mx-auto">
+                <div class="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm border border-primary-100/50">
+                    <div class="flex flex-col md:flex-row gap-6 mb-6">
+                        <img src="黑白边牧.jpg" alt="边牧" class="w-full md:w-1/3 rounded-2xl object-cover shadow aspect-square">
+                        <div class="flex-1">
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-warm-800 mb-2">黑白边境牧羊犬</h2>
+                            <p class="text-warm-500 mb-4">犬类智商的天花板</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-purple-50 text-purple-700 px-3 py-1 rounded-full text-sm">极度聪明</span>
+                                <span class="bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm">工作狂</span>
+                                <span class="bg-red-50 text-red-700 px-3 py-1 rounded-full text-sm font-medium">⚠️ 不适合新手</span>
+                            </div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-sm text-warm-600 font-medium">饲养难度：</span>
+                                <span class="star-filled text-lg">★★★★★</span>
+                                <span class="text-xs text-warm-400 ml-1">（极高）</span>
+                            </div>
+                            <p class="text-warm-600 leading-relaxed text-sm sm:text-base">理解能力相当于6-8岁的小孩，需要大量运动和精神激励。</p>
+                        </div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">🩺 饲养建议</h3>
+                            <ul class="space-y-3 text-warm-600 text-sm">
+                                <li>🧠 <strong>斗智斗勇：</strong> 如果没有足够的任务，它会去"牧"移动的车辆或小孩。</li>
+                                <li>🎾 <strong>极高互动：</strong> 适合有训犬经验的家庭。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">📏 基础指标</h3>
+                            <div class="space-y-2 text-sm text-warm-600">
+                                <p>成年肩高：46-56 cm</p>
+                                <p>平均寿命：12-15 年</p>
+                                <p>智商排名：第 1 名</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 陨石边牧 -->
+            <div id="merle-border" class="content-section max-w-4xl mx-auto">
+                <div class="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm border border-primary-100/50">
+                    <div class="flex flex-col md:flex-row gap-6 mb-6">
+                        <img src="陨石边牧.jpg" alt="陨石边牧" class="w-full md:w-1/3 rounded-2xl object-cover shadow aspect-square">
+                        <div class="flex-1">
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-warm-800 mb-2">陨石边境牧羊犬</h2>
+                            <p class="text-warm-500 mb-4">绝美花色的智商天花板</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-purple-50 text-purple-700 px-3 py-1 rounded-full text-sm">稀有毛色</span>
+                                <span class="bg-primary-50 text-primary-700 px-3 py-1 rounded-full text-sm">常有异瞳</span>
+                                <span class="bg-red-50 text-red-700 px-3 py-1 rounded-full text-sm font-medium">⚠️ 不适合新手</span>
+                            </div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-sm text-warm-600 font-medium">饲养难度：</span>
+                                <span class="star-filled text-lg">★★★★★</span>
+                                <span class="text-xs text-warm-400 ml-1">（极高）</span>
+                            </div>
+                            <p class="text-warm-600 leading-relaxed text-sm sm:text-base">特殊毛色呈现灰白黑交替的斑块，常有异瞳。</p>
+                        </div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">🩺 饲养建议</h3>
+                            <ul class="space-y-3 text-warm-600 text-sm">
+                                <li>⚠️ <strong>繁育禁忌：</strong> 严禁两只陨石边牧交配，极易生出缺陷犬。</li>
+                                <li>🎾 <strong>精力充沛：</strong> 同样需要每天大量消耗体力和脑力。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">📏 基础指标</h3>
+                            <div class="space-y-2 text-sm text-warm-600">
+                                <p>成年肩高：46-56 cm</p>
+                                <p>平均寿命：12-15 年</p>
+                                <p>智商排名：第 1 名</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 德国牧羊犬 -->
+            <div id="german-shepherd" class="content-section max-w-4xl mx-auto">
+                <div class="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm border border-primary-100/50">
+                    <div class="flex flex-col md:flex-row gap-6 mb-6">
+                        <img src="德国牧羊犬.jpg" alt="德牧" class="w-full md:w-1/3 rounded-2xl object-cover shadow aspect-square">
+                        <div class="flex-1">
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-warm-800 mb-2">德国牧羊犬</h2>
+                            <p class="text-warm-500 mb-4">万能的工作犬之王</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-primary-50 text-primary-700 px-3 py-1 rounded-full text-sm">护卫犬</span>
+                                <span class="bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm">服从性极高</span>
+                            </div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-sm text-warm-600 font-medium">饲养难度：</span>
+                                <span class="star-filled text-lg">★★★</span><span class="star-empty text-lg">★★</span>
+                                <span class="text-xs text-warm-400 ml-1">（中等）</span>
+                            </div>
+                            <p class="text-warm-600 leading-relaxed text-sm sm:text-base">世界上最著名的军警犬之一，极度忠诚、勇敢且智商极高。</p>
+                        </div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">🩺 饲养建议</h3>
+                            <ul class="space-y-3 text-warm-600 text-sm">
+                                <li>🦴 <strong>骨骼问题：</strong> 易患髋关节发育不良，幼犬期需控制体重。</li>
+                                <li>🐕 <strong>社会化：</strong> 必须从小做好社会化训练，防止攻击性。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">📏 基础指标</h3>
+                            <div class="space-y-2 text-sm text-warm-600">
+                                <p>成年肩高：55-65 cm</p>
+                                <p>平均体重：22-40 kg</p>
+                                <p>智商排名：第 3 名</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 彭布罗克柯基 -->
+            <div id="pembroke-corgi" class="content-section max-w-4xl mx-auto">
+                <div class="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm border border-primary-100/50">
+                    <div class="flex flex-col md:flex-row gap-6 mb-6">
+                        <img src="无尾柯基.jpg" alt="柯基" class="w-full md:w-1/3 rounded-2xl object-cover shadow aspect-square">
+                        <div class="flex-1">
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-warm-800 mb-2">彭布罗克威尔士柯基</h2>
+                            <p class="text-warm-500 mb-4">英国女王的挚爱</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-yellow-50 text-yellow-700 px-3 py-1 rounded-full text-sm">无尾/断尾</span>
+                                <span class="bg-pink-50 text-pink-700 px-3 py-1 rounded-full text-sm">电臀</span>
+                                <span class="bg-yellow-50 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">⭐ 适合新手</span>
+                            </div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-sm text-warm-600 font-medium">饲养难度：</span>
+                                <span class="star-filled text-lg">★★</span><span class="star-empty text-lg">★★★</span>
+                                <span class="text-xs text-warm-400 ml-1">（较低）</span>
+                            </div>
+                            <p class="text-warm-600 leading-relaxed text-sm sm:text-base">最常见的柯基品种，性格机警活泼，底盘稳健。</p>
+                        </div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">🩺 饲养建议</h3>
+                            <ul class="space-y-3 text-warm-600 text-sm">
+                                <li>🦴 <strong>保护腰椎：</strong> 严禁频繁上下楼梯，防脊椎病。</li>
+                                <li>⚖️ <strong>控制体重：</strong> 易胖体质，避免过度喂食。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">📏 基础指标</h3>
+                            <div class="space-y-2 text-sm text-warm-600">
+                                <p>成年肩高：25-30 cm</p>
+                                <p>平均体重：10-14 kg</p>
+                                <p>智商排名：第 11 名</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 卡迪根柯基 -->
+            <div id="cardigan-corgi" class="content-section max-w-4xl mx-auto">
+                <div class="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm border border-primary-100/50">
+                    <div class="flex flex-col md:flex-row gap-6 mb-6">
+                        <img src="长尾柯基.jpg" alt="卡迪根柯基" class="w-full md:w-1/3 rounded-2xl object-cover shadow aspect-square">
+                        <div class="flex-1">
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-warm-800 mb-2">卡迪根威尔士柯基</h2>
+                            <p class="text-warm-500 mb-4">大耳朵长尾巴的守卫</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-yellow-50 text-yellow-700 px-3 py-1 rounded-full text-sm">长尾巴</span>
+                                <span class="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-sm">性格沉稳</span>
+                                <span class="bg-yellow-50 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">⭐ 适合新手</span>
+                            </div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-sm text-warm-600 font-medium">饲养难度：</span>
+                                <span class="star-filled text-lg">★★</span><span class="star-empty text-lg">★★★</span>
+                                <span class="text-xs text-warm-400 ml-1">（较低）</span>
+                            </div>
+                            <p class="text-warm-600 leading-relaxed text-sm sm:text-base">保留了像狐狸一样的长尾巴，性格相对更为沉稳。</p>
+                        </div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">🩺 饲养建议</h3>
+                            <ul class="space-y-3 text-warm-600 text-sm">
+                                <li>🦴 <strong>保护腰椎：</strong> 同样底盘低，需要避免剧烈跳跃。</li>
+                                <li>🛡️ <strong>警戒心：</strong> 相比彭布罗克更为谨慎。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">📏 基础指标</h3>
+                            <div class="space-y-2 text-sm text-warm-600">
+                                <p>成年肩高：26-32 cm</p>
+                                <p>平均体重：11-17 kg</p>
+                                <p>智商排名：第 26 名</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 英系金毛 -->
+            <div id="english-golden" class="content-section max-w-4xl mx-auto">
+                <div class="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm border border-primary-100/50">
+                    <div class="flex flex-col md:flex-row gap-6 mb-6">
+                        <img src="英系金毛.jpg" alt="金毛" class="w-full md:w-1/3 rounded-2xl object-cover shadow aspect-square">
+                        <div class="flex-1">
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-warm-800 mb-2">英系金毛</h2>
+                            <p class="text-warm-500 mb-4">骨量充沛的大暖男</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-primary-50 text-primary-700 px-3 py-1 rounded-full text-sm">浅色被毛</span>
+                                <span class="bg-primary-50 text-primary-700 px-3 py-1 rounded-full text-sm">温顺稳重</span>
+                                <span class="bg-yellow-50 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">⭐ 适合新手</span>
+                            </div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-sm text-warm-600 font-medium">饲养难度：</span>
+                                <span class="star-filled text-lg">★★</span><span class="star-empty text-lg">★★★</span>
+                                <span class="text-xs text-warm-400 ml-1">（较低）</span>
+                            </div>
+                            <p class="text-warm-600 leading-relaxed text-sm sm:text-base">毛色偏向浅金甚至乳白色，性格极其温顺，服从性极高。</p>
+                        </div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">🩺 饲养建议</h3>
+                            <ul class="space-y-3 text-warm-600 text-sm">
+                                <li>🐕 <strong>晚熟：</strong> 3岁前比较调皮，3岁后变得非常稳重。</li>
+                                <li>🌊 <strong>毛发护理：</strong> 极易患皮肤病，洗完澡必须彻底吹干。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">📏 基础指标</h3>
+                            <div class="space-y-2 text-sm text-warm-600">
+                                <p>成年肩高：51-61 cm</p>
+                                <p>平均寿命：10-12 年</p>
+                                <p>智商排名：第 4 名</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 美系金毛 -->
+            <div id="american-golden" class="content-section max-w-4xl mx-auto">
+                <div class="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm border border-primary-100/50">
+                    <div class="flex flex-col md:flex-row gap-6 mb-6">
+                        <img src="美系金毛.jpg" alt="美系金毛" class="w-full md:w-1/3 rounded-2xl object-cover shadow aspect-square">
+                        <div class="flex-1">
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-warm-800 mb-2">美系金毛</h2>
+                            <p class="text-warm-500 mb-4">深色修长的运动健将</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-primary-50 text-primary-700 px-3 py-1 rounded-full text-sm">深色被毛</span>
+                                <span class="bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm">运动健将</span>
+                                <span class="bg-yellow-50 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">⭐ 适合新手</span>
+                            </div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-sm text-warm-600 font-medium">饲养难度：</span>
+                                <span class="star-filled text-lg">★★★</span><span class="star-empty text-lg">★★</span>
+                                <span class="text-xs text-warm-400 ml-1">（中等）</span>
+                            </div>
+                            <p class="text-warm-600 leading-relaxed text-sm sm:text-base">体型更加修长轻盈，毛色通常为深金色或铜色，性格更加活泼奔放。</p>
+                        </div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">🩺 饲养建议</h3>
+                            <ul class="space-y-3 text-warm-600 text-sm">
+                                <li>🏃 <strong>极高运动量：</strong> 相比英系需要更多的户外消耗。</li>
+                                <li>❤️ <strong>极度亲人：</strong> 不适合长时间独自留在家中。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-primary-50/50 p-4 sm:p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-warm-800 mb-4">📏 基础指标</h3>
+                            <div class="space-y-2 text-sm text-warm-600">
+                                <p>成年肩高：51-61 cm</p>
+                                <p>平均体重：25-34 kg</p>
+                                <p>智商排名：第 4 名</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+        <img id="lightboxImg" src="" alt="大图预览">
+    </div>
+
+    <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" class="fixed bottom-6 right-6 z-50 w-12 h-12 bg-gradient-to-br from-primary-400 to-primary-600 text-white rounded-full shadow-lg shadow-primary-500/30 flex items-center justify-center hover:-translate-y-1 hover:shadow-xl transition-all">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+    </button>
+
+    <script>
+        function toggleMenu(menuId, btn) {
+            const menu = document.getElementById(menuId);
+            const arrow = btn.querySelector('.arrow');
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                menu.classList.add('block');
+                arrow.classList.add('rotate-90');
+            } else {
+                menu.classList.remove('block');
+                menu.classList.add('hidden');
+                arrow.classList.remove('rotate-90');
+            }
+        }
+
+        function showContent(contentId, btn) {
+            document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(contentId).classList.add('active');
+            btn.classList.add('active');
+            if (window.innerWidth < 769) toggleSidebar();
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('mobile-hidden');
+            sidebar.classList.toggle('mobile-show');
+            overlay.classList.toggle('active');
+        }
+
+        if (window.innerWidth >= 769) {
+            document.getElementById('sidebar').classList.remove('mobile-hidden');
+        }
+
+        function searchPets(keyword) {
+            keyword = keyword.toLowerCase().trim();
+            const sections = document.querySelectorAll('.content-section');
+            const sidebarItems = document.querySelectorAll('.sidebar-item');
+
+            if (!keyword) return;
+
+            const genericKeywords = ['犬', '狗', '宠物', '品种', '图鉴', '科普'];
+            if (genericKeywords.includes(keyword)) {
+                alert('请输入更具体的宠物名称，如：金毛、萨摩耶、哈士奇');
+                return;
+            }
+
+            let firstMatchId = null;
+
+            sections.forEach(section => {
+                const text = section.textContent.toLowerCase();
+                if (text.includes(keyword) && !firstMatchId) {
+                    firstMatchId = section.id;
+                }
+            });
+
+            if (firstMatchId) {
+                sidebarItems.forEach(item => {
+                    item.classList.remove('active');
+                    if (item.getAttribute('onclick') && item.getAttribute('onclick').includes(firstMatchId)) {
+                        item.classList.add('active');
+                        const parentMenu = item.closest('.space-y-1');
+                        if (parentMenu && parentMenu.classList.contains('hidden')) {
+                            parentMenu.classList.remove('hidden');
+                            parentMenu.classList.add('block');
+                            const arrow = parentMenu.previousElementSibling.querySelector('.arrow');
+                            if (arrow) arrow.classList.add('rotate-90');
+                        }
+                    }
+                });
+
+                sections.forEach(s => s.classList.remove('active'));
+                document.getElementById(firstMatchId).classList.add('active');
+            } else {
+                alert('未找到匹配的宠物，请尝试其他关键词');
+            }
+        }
+
+        document.querySelectorAll('.content-section img').forEach(img => {
+            img.style.cursor = 'zoom-in';
+            img.addEventListener('click', function() {
+                const lightbox = document.getElementById('lightbox');
+                const lightboxImg = document.getElementById('lightboxImg');
+                lightboxImg.src = this.src;
+                lightboxImg.alt = this.alt;
+                lightbox.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+        });
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            lightbox.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeLightbox();
+        });
+
+        window.addEventListener('scroll', function() {
+            const btn = document.getElementById('backToTop');
+            if (window.scrollY > 300) {
+                btn.classList.add('show');
+            } else {
+                btn.classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>
