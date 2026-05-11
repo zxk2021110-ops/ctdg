@@ -98,6 +98,10 @@
         </div>
     </div>
 
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+<script src="firebase-config.js"></script>
 <script>
 document.getElementById('regForm').addEventListener('submit', function(e) {
     e.preventDefault();
@@ -110,11 +114,29 @@ document.getElementById('regForm').addEventListener('submit', function(e) {
         return;
     }
 
-    localStorage.setItem('username', user);
-    localStorage.setItem('password', pwd);
+    if (pwd.length < 6) {
+        alert('密码长度至少6位！');
+        return;
+    }
 
-    alert('注册成功！请登录');
-    location.href = 'login.html';
+    // 将用户名转为邮箱格式存储
+    let email = user + '@pethome.com';
+
+    auth.createUserWithEmailAndPassword(email, pwd)
+        .then((userCredential) => {
+            // 将用户名保存到用户资料
+            return userCredential.user.updateProfile({ displayName: user });
+        })
+        .then(() => {
+            alert('注册成功！请登录');
+            location.href = 'login.html';
+        })
+        .catch((error) => {
+            let msg = '注册失败！';
+            if (error.code === 'auth/email-already-in-use') msg = '用户名已存在！';
+            if (error.code === 'auth/weak-password') msg = '密码强度不够！';
+            alert(msg);
+        });
 });
 </script>
 </body>
