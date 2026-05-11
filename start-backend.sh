@@ -12,21 +12,29 @@ CPOLAR_PID=$!
 echo "cpolar 启动成功 (PID: $CPOLAR_PID)"
 
 # 等待 cpolar 启动
-sleep 5
+echo "等待 cpolar 启动..."
+sleep 10
 
-# 获取 cpolar 公网地址
+# 获取 cpolar 公网地址（多次尝试）
 echo "正在获取公网地址..."
-PUBLIC_URL=$(curl -s http://127.0.0.1:4040/api/tunnels 2>/dev/null | grep -o 'https://[^"]*' | head -1)
+for i in {1..5}; do
+    PUBLIC_URL=$(curl -s http://127.0.0.1:4040/api/tunnels 2>/dev/null | grep -o 'https://[^"]*' | head -1)
+    if [ -n "$PUBLIC_URL" ]; then
+        break
+    fi
+    echo "尝试 $i/5..."
+    sleep 3
+done
 
 if [ -z "$PUBLIC_URL" ]; then
     # 备用方案：从网页获取
-    PUBLIC_URL=$(curl -s http://127.0.0.1:4040/http/in 2>/dev/null | grep -o 'https://[^"]*\.cpolar\.top' | head -1)
+    PUBLIC_URL=$(curl -s http://127.0.0.1:4040/http/in 2>/dev/null | grep -o 'https://[^"]*\.cpolar\.cn' | head -1)
 fi
 
 if [ -z "$PUBLIC_URL" ]; then
-    # 再次尝试
-    sleep 3
-    PUBLIC_URL=$(curl -s http://127.0.0.1:4040/api/tunnels 2>/dev/null | grep -o 'https://[^"]*' | head -1)
+    # 再次尝试从网页获取
+    sleep 5
+    PUBLIC_URL=$(curl -s http://127.0.0.1:4040/http/in 2>/dev/null | grep -o 'https://[^"]*\.cpolar\.cn' | head -1)
 fi
 
 if [ -n "$PUBLIC_URL" ]; then
@@ -37,14 +45,25 @@ if [ -n "$PUBLIC_URL" ]; then
     sed -i "s|const API_BASE_URL = '.*';|const API_BASE_URL = '$PUBLIC_URL/api';|" "$API_FILE"
     echo "已更新 api.js 文件"
 
-    # 自动提交并推送到 GitHub
-    cd /var/lib/docker/volumes/my_nginx/_data
-    git add api.js
-    git commit -m "自动更新 API 地址: $PUBLIC_URL" 2>/dev/null
-    git push origin main 2>/dev/null
-    echo "已推送到 GitHub"
+    # 测试 API 是否可访问
+    echo "测试 API 连接..."
+    sleep 3
+    TEST_RESULT=$(curl -s "$PUBLIC_URL/api/test" 2>/dev/null)
+    if echo "$TEST_RESULT" | grep -q "success"; then
+        echo "API 测试成功！"
+
+        # 自动提交并推送到 GitHub
+        cd /var/lib/docker/volumes/my_nginx/_data
+        git add api.js
+        git commit -m "自动更新 API 地址: $PUBLIC_URL" 2>/dev/null
+        git push origin main 2>/dev/null
+        echo "已推送到 GitHub"
+    else
+        echo "API 测试失败，请检查后端服务"
+    fi
 else
     echo "无法获取公网地址，请手动检查 cpolar 控制台"
+    echo "访问 http://127.0.0.1:4040 查看隧道状态"
 fi
 
 echo ""
