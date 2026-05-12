@@ -3,7 +3,7 @@
 // ============================================================
 
 // API 配置
-const API_BASE_URL = 'https://3b4f9628.r28.cpolar.top/api';
+const API_BASE_URL = 'https://69c7fa17.r28.cpolar.top/api';
 
 // 安全检查：确保 Security 模块已加载
 if (typeof Security === 'undefined') {
